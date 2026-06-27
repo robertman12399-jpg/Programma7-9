@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0a0a1f">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PHJhZGlhbEdyYWRpZW50IGlkPSJnIiBjeD0iNTAlIiBjeT0iMzglIiByPSI3NSUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYjJjNGEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwYTEwMjAiLz48L3JhZGlhbEdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0idXJsKCNnKSIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM4ZTFmZiIgc3Ryb2tlLXdpZHRoPSIyLjQiPjxlbGxpcHNlIGN4PSIzMiIgY3k9IjMyIiByeD0iMjEiIHJ5PSI4LjUiLz48ZWxsaXBzZSBjeD0iMzIiIGN5PSIzMiIgcng9IjIxIiByeT0iOC41IiB0cmFuc2Zvcm09InJvdGF0ZSg2MCAzMiAzMikiLz48ZWxsaXBzZSBjeD0iMzIiIGN5PSIzMiIgcng9IjIxIiByeT0iOC41IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjAgMzIgMzIpIi8+PC9nPjxjaXJjbGUgY3g9IjMyIiBjeT0iMzIiIHI9IjUuNSIgZmlsbD0iI2ZmZDE2NiIvPjxjaXJjbGUgY3g9IjUzIiBjeT0iMzIiIHI9IjIuOCIgZmlsbD0iIzdlZTc4NyIvPjwvc3ZnPg==">
   <meta name="description" content="ФизМат RPG — изучай физику и математику как настоящую RPG-игру: проходи научные миры, выполняй задания, получай опыт и достижения.">
   <title>ФизМат RPG — Прокачай знания</title>
 
@@ -66,7 +67,7 @@ body {
 }
 /* Звёздное поле */
 .stars {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; will-change: transform; transition: transform .1s linear;
   background-image:
     radial-gradient(1px 1px at 20% 30%, #fff, transparent),
     radial-gradient(1px 1px at 70% 80%, #cfe8ff, transparent),
@@ -769,6 +770,7 @@ input { font-family: var(--font-body); }
 .vn-lawget {
   margin-top: 12px; padding: 10px 14px; border-radius: 12px; text-align: center;
   background: rgba(255,209,102,.10); border: 1px solid rgba(255,209,102,.4); color: #ffe9b8; font-size: 14px;
+  animation: artifactIn .85s cubic-bezier(.2,.8,.2,1) both;
 }
 .vn-lawget b { font-family: "Russo One", system-ui, sans-serif; color: var(--star-gold, #ffd166); }
 
@@ -1054,13 +1056,13 @@ input { font-family: var(--font-body); }
 /* ============================================================
    Движение интерфейса: переходы, дышащий персонаж, отклик
    ============================================================ */
-@keyframes viewFade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@keyframes viewFade { from { opacity: 0; transform: translateY(12px) scale(.996); } to { opacity: 1; transform: none; } }
 @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
 @keyframes shimmer { 0% { transform: translateX(-130%); } 100% { transform: translateX(260%); } }
 @keyframes spinSlow { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
 /* плавная смена экранов */
-.screen { animation: viewFade .24s ease both; }
+.screen { animation: viewFade .32s cubic-bezier(.2,.8,.2,1) both; }
 
 /* «дышащий» Ньютончик во всех местах */
 .newton-svg { animation: breathe 3.8s ease-in-out infinite; transform-origin: 50% 62%; }
@@ -1106,7 +1108,7 @@ input { font-family: var(--font-body); }
 .confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden; }
 .confetti-bit { position: absolute; top: -14px; border-radius: 2px; opacity: .95;
   animation-name: confettiFall; animation-timing-function: cubic-bezier(.3,.6,.4,1); animation-iteration-count: 1; }
-@keyframes confettiFall { 0% { transform: translateY(-14px) rotateZ(0); opacity: 1; } 100% { transform: translateY(112vh) rotateZ(640deg); opacity: .85; } }
+@keyframes confettiFall { 0% { transform: translateY(-14px) rotateZ(0); opacity: 1; } 100% { transform: translateY(112vh) rotateZ(var(--spin, 640deg)); opacity: .85; } }
 
 /* «+XP» у HUD */
 .hud { position: relative; }
@@ -1193,7 +1195,259 @@ input { font-family: var(--font-body); }
 
 @media (prefers-reduced-motion: reduce) { .menu-card::before { animation: none !important; } }
 
-  </style>
+/* ============================================================
+   Штаб Ньютончика (главное меню) + комплексные задачи
+   ============================================================ */
+.hq { display: flex; gap: 14px; align-items: center; padding: 14px; margin-bottom: 14px; border-radius: 18px;
+  border: 1px solid rgba(56,225,255,.25); background: linear-gradient(180deg, rgba(56,225,255,.10), rgba(160,107,255,.06)); }
+.hq-newton { flex: none; width: 74px; }
+.hq-newton .newton-svg { width: 74px; height: 74px; }
+.hq-body { flex: 1; min-width: 0; }
+.hq-title { font-family: "Russo One", system-ui, sans-serif; font-size: 18px; color: var(--text, #eef1ff); }
+.hq-line { font-size: 13px; line-height: 1.5; color: var(--text, #eef1ff); margin: 3px 0 8px; opacity: .95; }
+.hq-src { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--muted, #9aa0c7); }
+.hq-src-t { white-space: nowrap; }
+.hq-bar { flex: 1; height: 8px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden; border: 1px solid rgba(255,255,255,.10); }
+.hq-bar-fill { height: 100%; background: linear-gradient(90deg, #7ee787, #38e1ff); transition: width .8s ease; }
+.hq-src b { color: #7ee787; }
+
+.mc-combo { background: linear-gradient(135deg, rgba(255,122,217,.16), rgba(255,255,255,.02)); --mc-a: #ff7ad9; }
+
+.prob-sub { font-size: 12px; color: var(--muted, #9aa0c7); margin: -2px 0 10px; }
+.prob { border: 1px solid rgba(255,255,255,.10); border-radius: 14px; padding: 12px 13px; margin-bottom: 10px; background: rgba(255,255,255,.03); }
+.prob-q { font-size: 14.5px; line-height: 1.55; color: var(--text, #eef1ff); }
+.prob-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; margin-right: 8px;
+  background: var(--reaction-pink, #ff5da2); color: #2a0a18; font-size: 12px; font-weight: 700; vertical-align: middle; }
+.prob-sol { margin-top: 9px; }
+.prob-sol summary { cursor: pointer; font-size: 13px; color: var(--plasma-cyan, #38e1ff); user-select: none; }
+.prob-sol summary:hover { text-decoration: underline; }
+.prob-block { font-size: 14px; line-height: 1.55; color: var(--text, #eef1ff); margin-top: 8px; }
+.prob-step { padding: 4px 0 0 12px; }
+.prob-ans { font-size: 14px; margin-top: 9px; padding: 8px 11px; border-radius: 9px; background: rgba(126,231,135,.10); border: 1px solid rgba(126,231,135,.28); color: #bff5c5; }
+
+@media (prefers-reduced-motion: reduce) { .hq-bar-fill { transition: none; } }
+
+/* ============================================================
+   Режим «Экзамен»
+   ============================================================ */
+.mc-exam { background: linear-gradient(135deg, rgba(56,225,255,.14), rgba(255,122,217,.10)); --mc-a: #38e1ff; }
+.exam-card-hero, .exam-result { text-align: center; padding: 22px 16px; border-radius: 18px; margin-bottom: 14px;
+  border: 1px solid rgba(255,122,217,.28); background: radial-gradient(130% 120% at 50% 0%, rgba(255,122,217,.16), rgba(255,255,255,.02)); }
+.exam-hero-ico { font-size: 46px; line-height: 1; }
+.exam-hero-title { font-family: "Russo One", system-ui, sans-serif; font-size: 24px; color: var(--text, #eef1ff); margin-top: 6px; }
+.exam-hero-sub { font-size: 13.5px; line-height: 1.55; color: var(--muted, #9aa0c7); margin-top: 8px; }
+.exam-best { margin-top: 10px; font-size: 13px; color: var(--star-gold, #ffd166); }
+.exam-lens { display: flex; flex-direction: column; gap: 10px; }
+.exam-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted, #9aa0c7); margin-bottom: 8px; }
+.exam-top b { color: var(--text, #eef1ff); }
+.exam-prog { height: 8px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden; border: 1px solid rgba(255,255,255,.10); margin-bottom: 12px; }
+.exam-prog-fill { height: 100%; background: linear-gradient(90deg, #ff7ad9, #ffd166); transition: width .4s ease; }
+.exam-topic { font-size: 11px; color: var(--reaction-pink, #ff5da2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
+.exam-score { font-family: "Russo One", system-ui, sans-serif; font-size: 18px; color: var(--text, #eef1ff); margin-top: 8px; }
+.exam-mark { font-size: 15px; margin-top: 6px; color: var(--text, #eef1ff); }
+.exam-mark b { color: #7ee787; font-size: 22px; }
+.exam-meta { font-size: 13px; color: var(--muted, #9aa0c7); margin: 8px 0 14px; }
+@media (prefers-reduced-motion: reduce) { .exam-prog-fill { transition: none; } }
+
+/* варианты ответа (теория в экзамене) */
+.exam-opts { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
+.exam-opt { text-align: left; padding: 11px 13px; border-radius: 11px; cursor: pointer; font-size: 14px;
+  border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.03); color: var(--text, #eef1ff); transition: .14s; }
+.exam-opt:hover { border-color: var(--plasma-cyan, #38e1ff); background: rgba(56,225,255,.08); transform: translateX(2px); }
+.exam-sub2 { font-size: 13px; color: var(--reaction-pink, #ff5da2); margin-top: 2px; }
+
+.option { cursor: pointer; }
+
+/* ============================================================
+   Справочник формул (Лаборатория → Формулы)
+   ============================================================ */
+.fintro { font-size: 13px; color: var(--muted, #9aa0c7); margin: 4px 0 16px; line-height: 1.5; }
+.fgroup { margin-bottom: 18px; }
+.fgroup-h { font-family: "Russo One", system-ui, sans-serif; font-size: 16px; color: var(--text, #eef1ff);
+  margin-bottom: 10px; padding-left: 9px; border-left: 3px solid var(--plasma-cyan, #38e1ff); }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.fcard { border: 1px solid rgba(255,255,255,.10); border-radius: 12px; padding: 11px 12px; background: rgba(255,255,255,.03); }
+.fcard-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.fcard-name { font-size: 12.5px; color: var(--muted, #9aa0c7); }
+.fcard-copy { background: none; border: none; cursor: pointer; font-size: 13px; opacity: .55; padding: 2px; line-height: 1; }
+.fcard-copy:hover { opacity: 1; transform: scale(1.15); }
+.fcard-f { font-size: 16px; color: var(--plasma-cyan, #38e1ff); margin: 5px 0 4px; font-weight: 600; }
+.fcard-note { font-size: 11.5px; color: var(--muted, #9aa0c7); line-height: 1.4; }
+
+/* ============================================================
+   Мобильная адаптация (телефоны 320–480px) — Задача 3
+   ============================================================ */
+/* безопасные зоны по бокам и сверху (iPhone X и новее) */
+@supports (padding: max(0px)) {
+  .app-wrap { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  .hud { padding-top: max(12px, env(safe-area-inset-top)); }
+}
+
+@media (max-width: 480px) {
+  .app-wrap { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+
+  /* крупные тап-цели */
+  .btn { min-height: 44px; }
+  .tab { min-height: 48px; }
+  .hud-sound, .fcard-copy { min-width: 40px; min-height: 40px; }
+
+  /* меньше отступов на карточках */
+  .menu-card { padding: 13px; }
+  .mc-ico { width: 46px; height: 46px; font-size: 25px; }
+  .prob, .fcard, .tr-card { padding: 11px; }
+  .exam-card-hero, .exam-result { padding: 18px 13px; }
+  .menu-grid { gap: 9px; }
+
+  /* шрифты на ~12% меньше у крупных элементов */
+  .mq-h { font-size: 20px; }
+  .menu-card .mc-name { font-size: 16px; }
+  .menu-card .mc-desc { font-size: 12px; }
+  .screen-head h2 { font-size: clamp(20px, 6vw, 26px); }
+  .fgroup-h, .fcard-f { font-size: 15px; }
+  .prob-q, .tr-q { font-size: 14px; }
+  .option, .exam-opt { padding: 12px 14px; font-size: 14px; }
+  .hud-name { font-size: 15px; }
+
+  /* поля ввода: 16px, чтобы iOS не зумил, и крупнее под палец */
+  .num-input, .answer-row input { font-size: 16px; min-height: 46px; }
+  .answer-row .btn { min-height: 46px; }
+}
+
+@media (max-width: 360px) {
+  .app-wrap { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); }
+  .menu-card { padding: 11px; gap: 10px; }
+  .mc-ico { width: 42px; height: 42px; font-size: 22px; }
+  .menu-card .mc-name { font-size: 15px; }
+  .mq-h { font-size: 18px; }
+  .tab { font-size: 11px; }
+  .tab .ico { font-size: 17px; }
+}
+
+/* ============================================================
+   Кабинет учителя (демо) — Задача 4
+   ============================================================ */
+.ts-list { display: flex; flex-direction: column; gap: 10px; }
+.ts-card { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 12px 14px; border: 1px solid var(--space-line); border-radius: 14px; background: var(--space-panel); transition: border-color .15s ease, transform .1s ease; }
+.ts-card:hover { border-color: var(--accent); transform: translateX(2px); }
+.ts-card-ava { font-size: 30px; width: 46px; height: 46px; flex: 0 0 46px; display: grid; place-items: center;
+  border-radius: 50%; background: radial-gradient(circle at 30% 25%, #20214a, #111128); border: 2px solid var(--accent); }
+.ts-card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ts-card-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.ts-card-sub { font-size: 12px; color: var(--muted); }
+.ts-card-bar { height: 6px; border-radius: 999px; background: #0e0f24; border: 1px solid var(--space-line); overflow: hidden; margin-top: 3px; }
+.ts-card-bar-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 999px; }
+.ts-card-go { color: var(--muted); font-size: 13px; }
+
+.ts-head { display: flex; align-items: center; gap: 14px; margin: 6px 0 16px; }
+.ts-ava { font-size: 38px; width: 64px; height: 64px; flex: 0 0 64px; display: grid; place-items: center;
+  border-radius: 50%; background: radial-gradient(circle at 30% 25%, #20214a, #111128); border: 2px solid var(--accent); box-shadow: 0 0 14px var(--accent); }
+.ts-name { font-family: var(--font-display); font-size: 20px; color: var(--text); }
+.ts-meta { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+.ts-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+.ts-stat { text-align: center; padding: 12px 8px; border: 1px solid var(--space-line); border-radius: 12px; background: rgba(255,255,255,.03); }
+.ts-stat-v { font-family: "Russo One", system-ui, sans-serif; font-size: 22px; color: var(--star-gold); }
+.ts-stat-u { font-size: 12px; }
+.ts-stat-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.ts-sec-h { font-family: var(--font-display); font-size: 15px; color: var(--text); margin: 6px 0 10px; padding-left: 9px; border-left: 3px solid var(--accent); }
+.ts-topic { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.ts-topic-n { font-size: 13px; color: var(--text); width: 96px; flex: 0 0 96px; }
+.ts-topic-p { font-size: 12px; color: var(--muted); width: 38px; text-align: right; }
+.ts-bar { flex: 1; height: 9px; border-radius: 999px; background: #0e0f24; border: 1px solid var(--space-line); overflow: hidden; }
+.ts-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 999px; }
+.ts-assign { width: 100%; margin-top: 16px; }
+
+/* модалка назначения задания */
+.ts-modal { position: fixed; inset: 0; z-index: 80; background: rgba(6,8,20,.72); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: 20px; animation: tsFade .18s ease both; }
+@keyframes tsFade { from { opacity: 0; } to { opacity: 1; } }
+.ts-modal-panel { width: 100%; max-width: 380px; background: var(--space-deep, #12122e); border: 1px solid var(--accent);
+  border-radius: 18px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.ts-modal-h { font-family: var(--font-display); font-size: 18px; color: var(--text); margin-bottom: 6px; }
+.ts-modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+.ts-modal-topics { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.ts-topic-btn { padding: 9px 13px; border: 1px solid var(--space-line); border-radius: 999px; background: var(--space-panel);
+  color: var(--text); font-size: 13px; cursor: pointer; transition: all .12s ease; min-height: 40px; }
+.ts-topic-btn:hover { border-color: var(--accent); background: rgba(56,225,255,.12); }
+.ts-modal-cancel { width: 100%; }
+
+/* ============================================================
+   Ежедневные квесты — Задача 5
+   ============================================================ */
+.quests-block { border: 1px solid var(--space-line); border-radius: 16px; padding: 14px 16px; margin-bottom: 18px;
+  background: linear-gradient(135deg, rgba(56,225,255,.06), rgba(160,107,255,.06)); }
+.quests-head { display: flex; align-items: center; justify-content: space-between; font-family: var(--font-display);
+  font-size: 15px; color: var(--text); margin-bottom: 12px; }
+.quests-count { font-size: 13px; color: var(--star-gold); background: rgba(255,209,102,.12); padding: 2px 10px; border-radius: 999px; }
+.quest-row { display: flex; align-items: center; gap: 11px; padding: 7px 0; }
+.quest-row + .quest-row { border-top: 1px solid rgba(255,255,255,.05); }
+.quest-ico { font-size: 19px; width: 26px; text-align: center; flex: 0 0 26px; }
+.quest-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.quest-label { font-size: 13px; color: var(--text); }
+.quest-row.done .quest-label { color: var(--muted); text-decoration: line-through; }
+.quest-bar { height: 6px; border-radius: 999px; background: #0e0f24; border: 1px solid var(--space-line); overflow: hidden; }
+.quest-bar-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 999px; transition: width .5s cubic-bezier(.2,.8,.2,1); }
+.quest-row.done .quest-bar-fill { background: linear-gradient(90deg, #7ee787, #38e1ff); }
+.quest-rew { font-size: 11.5px; color: var(--muted); white-space: nowrap; min-width: 42px; text-align: right; }
+.quest-row.done .quest-rew { color: #7ee787; }
+.quests-alldone { margin-top: 10px; text-align: center; font-size: 12.5px; color: #7ee787;
+  background: rgba(126,231,135,.08); border-radius: 10px; padding: 8px; }
+.hud-chip.quests { color: var(--star-gold); }
+
+/* ============================================================
+   Экспорт/импорт сохранения — Задача 6
+   ============================================================ */
+.save-card { margin-top: 18px; border: 1px solid var(--space-line); border-radius: 16px; padding: 16px;
+  background: rgba(255,255,255,.03); }
+.save-head { font-family: var(--font-display); font-size: 15px; color: var(--text); margin-bottom: 6px; }
+.save-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; }
+.save-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.save-btns .btn { flex: 1; min-width: 130px; }
+.save-warn { font-size: 11.5px; color: var(--star-gold); margin-top: 10px; }
+
+
+/* ============================================================
+   Доп. анимации и эффекты — Задача 8
+   ============================================================ */
+@keyframes artifactIn {
+  0%   { opacity: 0; transform: scale(.7); box-shadow: 0 0 0 rgba(255,209,102,0); }
+  55%  { opacity: 1; transform: scale(1.06); box-shadow: 0 0 30px rgba(255,209,102,.6); }
+  100% { opacity: 1; transform: scale(1); box-shadow: 0 0 14px rgba(255,209,102,.22); }
+}
+.confetti-bit.round { border-radius: 50%; }
+.confetti-bit.emoji { background: none !important; border-radius: 0; width: auto; height: auto; font-size: 16px; line-height: 1; opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .stars { transition: none; transform: none !important; } }
+
+/* ============================================================
+   PIN-замок кабинета учителя + онбординг
+   ============================================================ */
+.pin-card { max-width: 320px; margin: 30px auto; text-align: center; border: 1px solid var(--space-line);
+  border-radius: 18px; padding: 28px 22px; background: rgba(255,255,255,.03); }
+.pin-ico { font-size: 40px; margin-bottom: 10px; }
+.pin-title { font-family: var(--font-display); font-size: 16px; margin-bottom: 16px; color: var(--text); }
+.pin-input { width: 150px; text-align: center; letter-spacing: 8px; font-size: 22px; padding: 10px;
+  border-radius: 12px; border: 1px solid var(--space-line); background: var(--space-deep); color: var(--text); margin-bottom: 16px; }
+.pin-input:focus { outline: none; border-color: var(--accent); box-shadow: var(--glow); }
+.pin-card .btn { width: 100%; }
+.pin-hint { font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+.onb-overlay { position: fixed; inset: 0; z-index: 95; background: rgba(6,8,20,.82); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 22px; animation: tsFade .2s ease both; }
+.onb-card { width: 100%; max-width: 380px; text-align: center; background: var(--space-deep, #12122e);
+  border: 1px solid var(--accent); border-radius: 20px; padding: 28px 24px; box-shadow: 0 24px 70px rgba(0,0,0,.55); }
+.onb-ico { font-size: 46px; margin-bottom: 12px; }
+.onb-title { font-family: var(--font-display); font-size: 19px; color: var(--text); margin-bottom: 10px; }
+.onb-text { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+.onb-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 18px; }
+.onb-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.18); transition: all .2s ease; }
+.onb-dot.on { background: var(--accent); width: 22px; border-radius: 999px; }
+.onb-btns { display: flex; gap: 10px; }
+.onb-btns .btn { flex: 1; }
+
+</style>
 </head>
 <body>
   <!-- Звёздное поле (фон) -->
@@ -1205,9 +1459,18 @@ input { font-family: var(--font-body); }
   </div>
 
   <!-- Порядок важен: данные → модель/сохранение → сюжет → интерфейс. -->
-  <!-- Встроенные модули (порядок важен): данные → модель → сюжет → интерфейс. -->
   <script>
-/* ===== js/data.js ===== */
+/* js/config.js */
+/* config.js — глобальные настройки сборки.
+   teacherMode:
+     true  — «Кабинет учителя» виден (для учителя / демо инвесторам);
+     false — вкладка «Учителю» скрыта (версия для учеников).
+   Этот флаг управляет видимостью кабинета во всём приложении. */
+window.FIZMAT_CONFIG = { teacherMode: true, teacherPin: "2357" };
+
+</script>
+  <script>
+/* js/data.js */
 /* ============================================================
    ФизМат RPG — data.js
    Весь игровой контент: классы героя, уровни, миры, темы,
@@ -2134,7 +2397,90 @@ GAME.discoveries = [
 /* Экспорт в глобальную область (на случай модульной сборки) */
 if (typeof window !== "undefined") window.GAME = GAME;
 
-/* ===== js/state.js ===== */
+</script>
+  <script>
+/* js/formulas.js */
+/* formulas.js — Задача 2: справочник формул (шпаргалка) для Лаборатории.
+   Доступен всегда, без прохождения тем. Подключать после data.js. */
+(function () {
+  if (typeof window === "undefined" || !window.GAME) return;
+  window.GAME.formulas = {
+    grade7: [
+      { group: "Движение", items: [
+        { name: "Скорость", f: "υ = S / t", note: "путь ÷ время; [м/с]" },
+        { name: "Путь", f: "S = υ · t", note: "при равномерном движении" },
+        { name: "Средняя скорость", f: "υ_ср = S_общ / t_общ", note: "весь путь ÷ всё время" },
+        { name: "Ускорение", f: "a = (υ − υ₀) / t", note: "как быстро меняется скорость; [м/с²]" },
+        { name: "Перевод скорости", f: "1 м/с = 3,6 км/ч", note: "÷3,6 из км/ч в м/с" },
+      ] },
+      { group: "Масса и плотность", items: [
+        { name: "Плотность", f: "ρ = m / V", note: "масса в единице объёма; [кг/м³]" },
+        { name: "Масса", f: "m = ρ · V", note: "" },
+        { name: "Объём", f: "V = m / ρ", note: "" },
+      ] },
+      { group: "Силы", items: [
+        { name: "Сила тяжести", f: "F = m · g", note: "g = 10 Н/кг" },
+        { name: "Вес тела", f: "P = m · g", note: "на неподвижной опоре" },
+        { name: "Сила упругости", f: "F = k · x", note: "закон Гука; x — удлинение" },
+        { name: "Сила трения", f: "Fтр = μ · N", note: "μ — коэффициент, N — сила прижатия" },
+        { name: "Равнодействующая", f: "R = F₁ ± F₂", note: "+ в одну сторону, − навстречу" },
+      ] },
+      { group: "Давление и жидкости", items: [
+        { name: "Давление тела", f: "p = F / S", note: "[Па]" },
+        { name: "Давление жидкости", f: "p = ρ · g · h", note: "столб жидкости" },
+        { name: "Сила давления", f: "F = p · S", note: "" },
+        { name: "Гидравлический пресс", f: "F₂ = F₁ · S₂ / S₁", note: "закон Паскаля" },
+        { name: "Сила Архимеда", f: "F_A = ρ_ж · g · V", note: "V — объём погружённой части" },
+      ] },
+      { group: "Работа, мощность, энергия", items: [
+        { name: "Механическая работа", f: "A = F · s", note: "[Дж]" },
+        { name: "Мощность", f: "N = A / t", note: "[Вт]" },
+        { name: "Правило рычага", f: "F₁ · l₁ = F₂ · l₂", note: "равновесие рычага" },
+        { name: "КПД", f: "КПД = (A_п / A_з) · 100%", note: "доля полезной работы" },
+        { name: "Потенциальная энергия", f: "Eₚ = m · g · h", note: "поднятого тела" },
+        { name: "Кинетическая энергия", f: "Eₖ = m · υ² / 2", note: "движущегося тела" },
+      ] },
+    ],
+  };
+})();
+
+</script>
+  <script>
+/* js/teacher_demo.js */
+/* teacher_demo.js — Задача 4: демо-данные «Кабинета учителя» (локально, без сервера). */
+(function () {
+  if (typeof window === "undefined") return;
+  window.TEACHER_DEMO = [
+    { id: "s1", name: "Алина Кузнецова", emoji: "👩‍🦰", level: 6, xp: 520, time: 184, errors: 7, last: "сегодня",
+      topics: [{ n: "Движение", p: 100 }, { n: "Плотность", p: 90 }, { n: "Силы", p: 75 }, { n: "Давление", p: 45 }, { n: "Архимед", p: 20 }, { n: "Работа", p: 0 }] },
+    { id: "s2", name: "Максим Петров", emoji: "👦", level: 8, xp: 760, time: 240, errors: 4, last: "вчера",
+      topics: [{ n: "Движение", p: 100 }, { n: "Плотность", p: 100 }, { n: "Силы", p: 95 }, { n: "Давление", p: 90 }, { n: "Архимед", p: 80 }, { n: "Работа", p: 70 }] },
+    { id: "s3", name: "Дима Соколов", emoji: "🧑", level: 2, xp: 140, time: 52, errors: 12, last: "3 дня назад",
+      topics: [{ n: "Движение", p: 60 }, { n: "Плотность", p: 30 }, { n: "Силы", p: 10 }, { n: "Давление", p: 0 }, { n: "Архимед", p: 0 }, { n: "Работа", p: 0 }] },
+    { id: "s4", name: "Соня Иванова", emoji: "👧", level: 5, xp: 410, time: 150, errors: 9, last: "сегодня",
+      topics: [{ n: "Движение", p: 100 }, { n: "Плотность", p: 80 }, { n: "Силы", p: 60 }, { n: "Давление", p: 50 }, { n: "Архимед", p: 30 }, { n: "Работа", p: 10 }] },
+    { id: "s5", name: "Артём Лебедев", emoji: "🧒", level: 4, xp: 300, time: 98, errors: 6, last: "вчера",
+      topics: [{ n: "Движение", p: 90 }, { n: "Плотность", p: 70 }, { n: "Силы", p: 40 }, { n: "Давление", p: 20 }, { n: "Архимед", p: 0 }, { n: "Работа", p: 0 }] },
+  ];
+})();
+
+</script>
+  <script>
+/* js/quests.js */
+/* quests.js — Задача 5: ежедневные квесты. Подключать до state.js. */
+(function () {
+  if (typeof window === "undefined") return;
+  window.QUEST_DEFS = [
+    { id: "solve5", icon: "✅", label: "Реши 5 задач", metric: "solve", target: 5, xp: 40, coins: 20 },
+    { id: "exam3", icon: "📝", label: "Ответь верно на 3 вопроса в экзамене", metric: "exam", target: 3, xp: 35, coins: 20 },
+    { id: "boss1", icon: "⚔️", label: "Победи одного босса", metric: "boss", target: 1, xp: 60, coins: 30 },
+    { id: "login1", icon: "📅", label: "Загляни в игру сегодня", metric: "login", target: 1, xp: 15, coins: 15 },
+  ];
+})();
+
+</script>
+  <script>
+/* js/state.js */
 /* ============================================================
    ФизМат RPG — state.js
    Слой модели и сохранения. Здесь живёт всё состояние игры
@@ -2200,9 +2546,11 @@ function defaultState() {
     course: { done: {} },
     // Прогресс по тренажёру: max — макс. открытый уровень по теме "secId:idx", solved — всего решено
     trainer: { max: {}, solved: 0 },
+    // Результаты экзамена
+    exam: { best: 0, taken: 0 },
     // Стиль исследователя — чисто косметика (выборы в сюжете), не влияет на обучение
     style: { experiment: 0, formula: 0, risk: 0 },
-    settings: { sound: true },
+    settings: { sound: true, music: true, onboarded: false, teacherUnlocked: false },
   };
 }
 
@@ -2234,6 +2582,53 @@ const State = {
     return this.data;
   },
   save() { Storage.write(JSON.stringify(this.data)); },
+
+  // ---- Ежедневные квесты ----
+  questToday() { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); },
+  dailyEnsure() {
+    if (!this.data.daily || this.data.daily.date !== this.questToday()) {
+      this.data.daily = { date: this.questToday(), c: {}, claimed: {} };
+      this.save();
+    }
+    return this.data.daily;
+  },
+  questBump(metric, n) {
+    const d = this.dailyEnsure();
+    d.c[metric] = (d.c[metric] || 0) + (n || 1);
+    const done = [];
+    ((typeof window !== "undefined" && window.QUEST_DEFS) || []).forEach((q) => {
+      if (!d.claimed[q.id] && (d.c[q.metric] || 0) >= q.target) {
+        d.claimed[q.id] = true;
+        if (this.awardStory) this.awardStory(q.xp, q.coins, "quest"); else { this.addXP(q.xp, "quest"); }
+        done.push(q);
+      }
+    });
+    this.save();
+    return done;
+  },
+  questProgress() {
+    const d = this.dailyEnsure();
+    return ((typeof window !== "undefined" && window.QUEST_DEFS) || []).map((q) => ({
+      q, val: Math.min(d.c[q.metric] || 0, q.target), done: !!d.claimed[q.id] || (d.c[q.metric] || 0) >= q.target,
+    }));
+  },
+  questDoneCount() { return this.questProgress().filter((x) => x.done).length; },
+
+  // ---- Экспорт / импорт сохранения ----
+  exportData() { return JSON.stringify(this.data, null, 2); },
+  importData(parsed) {
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
+    if (!("hero" in parsed) && !("stats" in parsed) && !("settings" in parsed)) return false;
+    this.data = Object.assign(defaultState(), parsed);
+    this.data.stats = Object.assign(defaultState().stats, parsed.stats || {});
+    this.data.unlocks = Object.assign(defaultState().unlocks, parsed.unlocks || {});
+    this.data.equipped = Object.assign(defaultState().equipped, parsed.equipped || {});
+    this.data.settings = Object.assign(defaultState().settings, parsed.settings || {});
+    this.data.adventure = Object.assign(defaultState().adventure, parsed.adventure || {});
+    this.data.style = Object.assign(defaultState().style, parsed.style || {});
+    this.save();
+    return true;
+  },
   reset() { Storage.clear(); this.data = defaultState(); },
   hasSave() { return !!Storage.read(); },
 
@@ -2638,6 +3033,7 @@ const State = {
 
   /* --- настройки --- */
   toggleSound() { this.data.settings.sound = !this.data.settings.sound; this.save(); return this.data.settings.sound; },
+  toggleMusic() { this.data.settings.music = !this.data.settings.music; this.save(); return this.data.settings.music; },
 
   /* --- сводка прогресса --- */
   topicsStudied() { return Object.values(this.data.progress).filter((p) => p.completed).length; },
@@ -2646,7 +3042,9 @@ const State = {
 
 if (typeof window !== "undefined") { window.State = State; window.Storage = Storage; }
 
-/* ===== js/story.js ===== */
+</script>
+  <script>
+/* js/story.js */
 /* ============================================================
    ФизМат RPG — story.js
    СЮЖЕТНЫЕ ГЛАВЫ (визуальная новелла).
@@ -2777,7 +3175,7 @@ GAME.chapters = [
         type: "line",
         speaker: "Рассказчик",
         emoji: "🌌",
-        text: "Во Вселенной существовал Источник Знаний — он объединял все законы природы. Но случился Научный хаос, и законы начали исчезать из миров…",
+        text: "Первая Часть на месте — вещество ожило. Но едва Источник засветился, в соседнем мире погасло движение: мяч не катится, машина времени застыла, будто навсегда забыла, что такое скорость.",
       },
       {
         type: "line",
@@ -2908,10 +3306,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 190, coins: 115 },
         achievement: "inertia_master",
-        outro: { title: "Инерция укрощена!", sub: "Ты понял, почему тела сохраняют скорость, и вернул равновесие в мир." },
+        outro: { title: "Инерция укрощена!", sub: "Ты понял, почему тела сохраняют скорость, и вернул Источнику ещё одну Часть. Впереди — мир, где вещи перепутали, кому плавать, а кому тонуть." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "🌀",
-            text: "После того как скорость вернулась в мир, случилось нечто странное — все тела начали двигаться, но не могли остановиться. Мир инерции вышел из-под контроля." },
+            text: "Движение вернулось — и тут же вышло из берегов. Тела разогнались и не могут остановиться: шайба летит по льду без конца, мяч мчится всё дальше. Мир инерции потерял тормоза." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Смотри! Шайба катится по льду и не останавливается, а мяч летит всё дальше. Инерция сошла с ума! Нужно вспомнить, что это такое." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -2951,13 +3349,14 @@ GAME.chapters = [
             ],
             reward: { xp: 30, coins: 10 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Отлично! Теперь мир инерции снова под контролем. Остался финальный вызов — поймать неуправляемый спутник." },
+            text: "Ты почти укротил инерцию! Остался финальный вызов — зонд, летящий в открытом космосе. Помни: если на тело не действуют другие тела, оно само сохраняет скорость, и никакая сила для этого не нужна." },
           { type: "boss", title: "Спутник-беглец", emoji: "🛰️",
-            story: "Космическая станция массой 1000 т летит со скоростью 8 км/с. Двигатели выключены. Какая сила на неё действует?",
-            q: "Сила (Н):",
-            answer: 0, unit: "Н",
-            hint: "Если двигатели выключены и нет других сил, тело движется по инерции.",
-            solution: "F = 0 — станция движется по инерции." }
+            story: "В открытом космосе, далеко от звёзд и планет, летит зонд массой 1000 т со скоростью 8 км/с. Двигатели выключены, рядом нет других тел. Какая сила на него действует?",
+            q: "Выбери ответ:",
+            options: ["0 Н — зонд движется по инерции", "8000 Н", "1000 Н", "Нужны дополнительные данные"],
+            correct: 0,
+            hint: "Если двигатели выключены и нет других сил, тело движется по инерции — сила не нужна.",
+            solution: "F = 0: при отсутствии сил тело по инерции сохраняет скорость." }
         ]
       },
 
@@ -2975,10 +3374,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 200, coins: 120 },
         achievement: "density_master",
-        outro: { title: "Плотность познана!", sub: "Ты научился определять плотность и понял, почему тела плавают или тонут." },
+        outro: { title: "Плотность познана!", sub: "Ты научился определять плотность и забрал новую Часть. А впереди — мир, где всё разгоняется и тормозит как попало." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "🌊",
-            text: "Инерция вернулась, но теперь появилась новая проблема: в мире вещества всё перепуталось. Железные глыбы плавают, а деревянные бруски тонут." },
+            text: "Инерция укрощена, Часть на месте — но спокойствие было недолгим. В мире вещества всё перевернулось: железные глыбы всплывают, как пробки, а лёгкие деревяшки камнем идут на дно. Кто-то спутал саму плотность вещей." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Это катастрофа! Корабли не могут плавать, а камни всплывают. Нужно срочно разобраться с плотностью." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -3018,7 +3417,7 @@ GAME.chapters = [
             ],
             reward: { xp: 35, coins: 12 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Теперь вещества снова ведут себя правильно! Остался последний вопрос — опознай таинственный металл." },
+            text: "Вещества снова знают своё место! Остался последний узел — опознать таинственный слиток. Подсказка: плотность ρ = m / V, и у каждого металла она своя — сравни с таблицей и узнаешь имя." },
           { type: "boss", title: "Опознай металл", emoji: "🔍",
             story: "Археологи нашли слиток массой 1950 г и объёмом 250 см³. Определите его плотность и название металла.",
             q: "Плотность (г/см³):",
@@ -3042,10 +3441,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 210, coins: 125 },
         achievement: "acceleration_master",
-        outro: { title: "Ускорение под контролем!", sub: "Ты освоил законы ускорения и вернул гармонию в мир." },
+        outro: { title: "Ускорение под контролем!", sub: "Ты обуздал ускорение и вернул Источнику ещё одну Часть. Но движение нужно ещё и читать — а в соседнем мире взбунтовались графики." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "🏎️",
-            text: "После того как плотность была восстановлена, мир ускорения пришёл в хаос — тела разгоняются и тормозят без всякой логики." },
+            text: "Плотность восстановлена, Часть сияет в Источнике. Но соседний мир уже трясёт: гоночный болид то рвёт с места, то замирает, машины разгоняются рывками без всякой логики. Мир ускорения сорвался с цепи." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Посмотри! Гоночный болид то резко ускоряется, то внезапно тормозит. Нужно вспомнить, что такое ускорение." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -3085,7 +3484,7 @@ GAME.chapters = [
             ],
             reward: { xp: 35, coins: 12 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Ускорение снова работает правильно! Осталось рассчитать разгон для космического корабля." },
+            text: "Ускорение снова слушается! Остался главный разгон — вывести звёздный корабль на скорость. Помни: ускорение a = (υ − υ₀) / t показывает, как быстро меняется скорость." },
           { type: "boss", title: "Гонка к звёздам", emoji: "🏎️",
             story: "Космический корабль должен разогнаться с 0 до 100 м/с за 10 с. Какое ускорение ему нужно?",
             q: "Ускорение (м/с²):",
@@ -3109,10 +3508,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 215, coins: 130 },
         achievement: "graph_guru",
-        outro: { title: "Графики прочитаны!", sub: "Ты научился читать графики и видеть движение в линиях." },
+        outro: { title: "Графики прочитаны!", sub: "Ты научился видеть движение в линиях и забрал новую Часть. Дальше — мир, где вес сошёл с ума: на орбите тела весят тонны, а на Земле — граммы." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "📊",
-            text: "С ускорением разобрались, но теперь мир графиков погрузился в хаос — линии на графиках больше не имеют смысла." },
+            text: "Ускорение под контролем, Часть на месте. И тут линии на всех приборах поплыли: графики движения превратились в бессмысленные зигзаги, по ним не прочесть ни путь, ни скорость. Мир графиков потерял язык." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Смотри! График скорости — это не прямая, а хаотичная кривая. Нужно вспомнить, что означают графики." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -3152,7 +3551,7 @@ GAME.chapters = [
             ],
             reward: { xp: 35, coins: 12 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Графики снова имеют смысл! Остался главный график для финального расчёта." },
+            text: "Графики снова заговорили! Остался главный чертёж — по нему предстоит сделать финальный расчёт. Помни: по графику пути и времени можно найти скорость, а наклон линии показывает, как быстро идёт движение." },
           { type: "boss", title: "Мастер графиков", emoji: "📉",
             story: "По графику зависимости скорости от времени определите путь, пройденный телом за 4 с, если скорость была постоянной 8 м/с.",
             q: "Путь (м):",
@@ -3176,10 +3575,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 220, coins: 135 },
         achievement: "weight_wise",
-        outro: { title: "Вес познан!", sub: "Ты понял разницу между весом и силой тяжести и научился рассчитывать вес в разных условиях." },
+        outro: { title: "Вес познан!", sub: "Ты понял разницу между весом и силой тяжести и забрал новую Часть. Впереди — Мир сил, где предметы то застывают намертво, то срываются с места." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "🌍",
-            text: "Мир веса сошёл с ума: космонавты на орбите весят тонны, а на Земле — граммы. Пора навести порядок." },
+            text: "Графики снова читаются, Часть сияет. Но впереди новый сбой: космонавты на орбите вдруг весят тонны, а на Земле становятся лёгкими, как пушинки. Мир веса перепутал силу тяжести и вес." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Смотри! Лифт поднимается, и вес людей меняется. Нужно вспомнить, что такое вес и от чего он зависит." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -3219,7 +3618,7 @@ GAME.chapters = [
             ],
             reward: { xp: 35, coins: 12 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Теперь вес снова подчиняется законам! Остался финальный расчёт для космического лифта." },
+            text: "Вес снова подчиняется законам! Остался финальный расчёт — для космического лифта. Помни: вес тела на неподвижной опоре равен силе тяжести P = m·g, а g на разных планетах своё." },
           { type: "boss", title: "Космический лифт", emoji: "🚀",
             story: "Лифт поднимается с ускорением 3 м/с². Человек массой 70 кг стоит на весах. Каков его вес? (g=10)",
             q: "Вес (Н):",
@@ -3249,7 +3648,7 @@ GAME.chapters = [
     hubMood: "surprised",
     reward: { xp: 220, coins: 130 },
     achievement: "force_master",
-    outro: { title: "Силы укрощены!", sub: "Ты понял, как силы управляют движением, и собрал Часть Силы для Источника Знаний." },
+    outro: { title: "Силы укрощены!", sub: "Ты понял, как силы управляют движением, и собрал Часть Силы для Источника Знаний. А впереди — мир глубин, где давление вышло из-под контроля." },
 
     scenes: [
       { type: "line", speaker: "Рассказчик", emoji: "🌪️",
@@ -3319,10 +3718,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 230, coins: 140 },
         achievement: "pressure_master",
-        outro: { title: "Давление укрощено!", sub: "Ты понял, что такое давление и как оно зависит от силы и площади." },
+        outro: { title: "Давление укрощено!", sub: "Ты понял, как давление зависит от силы и площади, и забрал новую Часть. А впереди — чёрная толща океана, где на дне спит затонувший город." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "📌",
-            text: "Мир давления охватил хаос: острые предметы стали тупыми, а тяжёлые машины проваливаются в землю. Пора вспомнить, что такое давление." },
+            text: "Силы укрощены, Часть Силы на месте. Но соседний мир проседает: острые иглы затупились, а тяжёлые машины проваливаются в землю, будто она стала жиже. Мир давления забыл, что оно зависит не только от силы, но и от площади." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Смотри! Кнопка не входит в доску, а человек на лыжах проваливается в снег. Нужно срочно разобраться с давлением." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -3362,7 +3761,7 @@ GAME.chapters = [
             ],
             reward: { xp: 35, coins: 12 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Давление снова работает правильно! Остался финальный вызов — спасти робота на тонком льду." },
+            text: "Давление снова работает! Остался финальный вызов — спасти робота, застрявшего на тонком льду. Подсказка: давление p = F / S, и чем больше площадь опоры, тем меньше давление на лёд." },
           { type: "boss", title: "Лёд под роботом", emoji: "🤖",
             story: "Робот весит 1200 Н. Лёд выдерживает давление до 300 Па. Какую минимальную площадь опоры должен иметь робот?",
             q: "Площадь (м²):",
@@ -3392,7 +3791,7 @@ GAME.chapters = [
     hubMood: "surprised",
     reward: { xp: 240, coins: 140 },
     achievement: "depth_master",
-    outro: { title: "Город всплывает!", sub: "Ты раскрыл тайну глубины и собрал Часть Глубин для Источника Знаний." },
+    outro: { title: "Город всплывает!", sub: "Ты раскрыл тайну глубины и собрал Часть Глубин для Источника Знаний. Но чтобы поднимать такие тяжести, миру нужна сила гидравлики — а она вдруг иссякла." },
 
     scenes: [
       { type: "line", speaker: "Рассказчик", emoji: "🌊",
@@ -3462,10 +3861,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 240, coins: 145 },
         achievement: "hydraulic_hero",
-        outro: { title: "Гидравлика восстановлена!", sub: "Ты научился использовать закон Паскаля для усиления силы." },
+        outro: { title: "Гидравлика восстановлена!", sub: "Ты освоил закон Паскаля и усиление силы — и вернул Источнику Часть. Впереди — Мир механизмов, где замерли рычаги, блоки и подъёмники." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "⚙️",
-            text: "Гидравлические машины, которые поднимали огромные грузы, внезапно перестали работать. Пора вспомнить закон Паскаля." },
+            text: "Затонувший город спасён, Часть Глубин сияет в Источнике. Но машины, что поднимали со дна огромные грузы, разом застыли: прессы и домкраты потеряли силу. Мир гидравлики забыл закон Паскаля." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Смотри! Гидравлический пресс не может сжать даже бумагу. Нужно срочно разобраться в его устройстве." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -3505,7 +3904,7 @@ GAME.chapters = [
             ],
             reward: { xp: 38, coins: 14 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Гидравлика снова работает! Осталось поднять автомобиль с помощью домкрата." },
+            text: "Гидравлика снова в строю! Остался финал — поднять домкратом целый автомобиль. Помни: давление в жидкости передаётся одинаково во все стороны, поэтому малая сила на узком поршне даёт большую на широком." },
           { type: "boss", title: "Подъём автомобиля", emoji: "🚗",
             story: "Автомобиль массой 1,5 т нужно поднять гидравлическим домкратом. Площадь малого поршня 10 см², большого 500 см². Какую силу нужно приложить к малому поршню? (g=10)",
             q: "Сила (Н):",
@@ -3536,7 +3935,7 @@ GAME.chapters = [
     hubMood: "surprised",
     reward: { xp: 250, coins: 150 },
     achievement: "mechanic_master",
-    outro: { title: "Механизмы ожили!", sub: "Ты вернул машинам силу и собрал ещё одну Часть для Источника Знаний." },
+    outro: { title: "Механизмы ожили!", sub: "Ты вернул машинам силу и собрал ещё одну Часть для Источника Знаний. А в следующем мире огромные корабли вдруг пошли ко дну." },
 
     scenes: [
       { type: "line", speaker: "Рассказчик", emoji: "⚙️",
@@ -3605,10 +4004,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 250, coins: 150 },
         achievement: "floating_king",
-        outro: { title: "Плавание познано!", sub: "Ты понял, почему одни тела плавают, а другие тонут." },
+        outro: { title: "Плавание познано!", sub: "Ты понял, почему одни тела плавают, а другие тонут, и забрал новую Часть. Дальше — мир приборов, где манометры разучились показывать давление." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "🌊",
-            text: "Мир плавания погрузился в хаос: огромные корабли идут ко дну, а маленькие камешки держатся на поверхности." },
+            text: "Механизмы снова полны силы, Часть на месте. Но в соседнем мире беда на воде: гигантские корабли идут ко дну, а крошечные камешки держатся на плаву. Мир плавания перепутал, кому всплывать, а кому тонуть." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Смотри! Титаник тонет, а пробка всплывает! Нужно срочно вспомнить условия плавания тел." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -3648,7 +4047,7 @@ GAME.chapters = [
             ],
             reward: { xp: 38, coins: 14 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Плавание снова подчиняется законам! Остался финальный расчёт грузоподъёмности корабля." },
+            text: "Плавание снова подчиняется законам! Остался финальный расчёт — грузоподъёмность корабля. Помни: тело плавает, когда выталкивающая сила Архимеда равна его весу." },
           { type: "boss", title: "Капитан корабля", emoji: "⛵",
             story: "Корабль водоизмещением 8000 т, собственный вес 3000 т. Сколько тонн груза он может взять на борт?",
             q: "Грузоподъёмность (т):",
@@ -3672,10 +4071,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 255, coins: 155 },
         achievement: "manometer_master",
-        outro: { title: "Манометры откалиброваны!", sub: "Ты научился измерять давление с помощью манометров." },
+        outro: { title: "Манометры откалиброваны!", sub: "Ты научился измерять давление приборами и вернул Источнику Часть. Остался последний мир 7 класса — Мир энергии, где всё движется без причины." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "📏",
-            text: "Мир манометров потерял точность: приборы показывают всё, что угодно, только не правильное давление." },
+            text: "Корабли снова держатся на воде, Часть на месте. Но измерять давление стало нечем: манометры показывают что угодно, только не правду. Мир приборов потерял точность." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Смотри! Манометр в шине показывает 1000 атмосфер, а в паровом котле — 0. Нужно вспомнить, как работают манометры." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -3715,7 +4114,7 @@ GAME.chapters = [
             ],
             reward: { xp: 38, coins: 14 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Манометры снова точны! Осталось перевести давление из атмосфер в паскали." },
+            text: "Манометры снова точны! Остался последний шаг — перевести давление из атмосфер в паскали. Помни: одна атмосфера — это примерно 100 000 Па." },
           { type: "boss", title: "Мастер манометров", emoji: "🔧",
             story: "Манометр показывает давление в шине 2,2 атм. Переведите это в паскали (1 атм = 101325 Па).",
             q: "Давление (Па):",
@@ -3739,10 +4138,10 @@ GAME.chapters = [
         hubMood: "surprised",
         reward: { xp: 260, coins: 160 },
         achievement: "energy_master",
-        outro: { title: "Энергия восстановлена!", sub: "Ты освоил закон сохранения энергии и научился рассчитывать работу и мощность." },
+        outro: { title: "Энергия восстановлена!", sub: "Ты освоил работу, мощность и закон сохранения энергии — и собрал последнюю Часть 7 класса! Источник Знаний почти восстановлен… но впереди миры посложнее — 8 класс." },
         scenes: [
           { type: "line", speaker: "Рассказчик", emoji: "🔋",
-            text: "Мир энергии погрузился в хаос: тела движутся без причины, а потенциальная энергия исчезает. Пора вспомнить, что такое энергия." },
+            text: "Приборы снова точны, Часть на месте. Но впереди самый странный сбой: тела движутся будто сами по себе, а энергия исчезает в никуда. Мир энергии забыл, что просто так она не берётся и не пропадает." },
           { type: "line", speaker: "Ньютончик", mood: "surprised", emoji: "🧑‍🔬",
             text: "Смотри! Шарик на горке не скатывается, а поднятый груз не падает. Нужно срочно разобраться с энергией." },
           { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🧑‍🔬",
@@ -3782,7 +4181,7 @@ GAME.chapters = [
             ],
             reward: { xp: 40, coins: 15 } },
           { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
-            text: "Энергия снова работает правильно! Остался финальный расчёт для катапульты." },
+            text: "Энергия снова течёт правильно! Остался финал — запустить катапульту точным расчётом. Помни: потенциальная энергия поднятого тела Eₚ = m·g·h, а работа A = F·s." },
           { type: "boss", title: "Заряд катапульты", emoji: "🎯",
             story: "Снаряд массой 5 кг нужно разогнать до 12 м/с. Сколько энергии нужно запасти?",
             q: "Кинетическая энергия (Дж):",
@@ -4034,7 +4433,290 @@ GAME.prologue = [
 /* Экспорт (на случай модульной сборки) */
 if (typeof window !== "undefined") window.GAME = GAME;
 
-/* ===== js/course.js ===== */
+</script>
+    <script>
+/* js/story_plus.js */
+/* ============================================================
+   ФизМат RPG — story_plus.js
+   Надстройка над главами: при загрузке
+   1) ДОПОЛНЯЕТ практику каждой главы контекстными задачами
+      (все применения формулы: прямая, обратная, перевод единиц, смысл);
+   2) УСИЛИВАЕТ боссов — делает их многошаговыми и требующими
+      знаний предыдущих тем, вплетая это в сюжет главы.
+   Ничего не ломает: только добавляет items и переопределяет поля босса.
+   ============================================================ */
+(function () {
+  if (typeof window === "undefined" || !window.GAME) return;
+
+  var EXTRA = {
+    // ——— Вещество ———
+    matter: {
+      add: [
+        { kind: "mc", q: "В каком состоянии вещество легче всего сжать?", options: ["Твёрдое", "Жидкое", "Газообразное", "Любое одинаково"], correct: 2, solution: "В газе между молекулами большие промежутки — он сжимается легче всего." },
+        { kind: "mc", q: "Почему запах духов быстро расходится по комнате?", options: ["Из-за диффузии", "Из-за силы тяжести", "Из-за давления", "Из-за трения"], correct: 0, solution: "Молекулы пара перемешиваются с молекулами воздуха — это диффузия." },
+        { kind: "mc", q: "Что произойдёт с диффузией, если воду нагреть?", options: ["Ускорится", "Замедлится", "Остановится", "Не изменится"], correct: 0, solution: "При нагревании молекулы движутся быстрее — диффузия ускоряется." },
+      ],
+    },
+    // ——— Скорость ———
+    ch1: {
+      add: [
+        { kind: "num", q: "Велосипедист едет со скоростью 5 м/с. Какой путь он проедет за 20 с? (м)", answer: 100, unit: "м", solution: "S = υ·t = 5·20 = 100 м." },
+        { kind: "num", q: "Автомобиль прошёл 240 м со скоростью 12 м/с. Сколько времени он ехал? (с)", answer: 20, unit: "с", solution: "t = S/υ = 240/12 = 20 с." },
+        { kind: "num", q: "Вырази скорость 54 км/ч в метрах в секунду. (м/с)", answer: 15, unit: "м/с", solution: "54 / 3,6 = 15 м/с." },
+      ],
+    },
+    // ——— Инерция (концепт) ———
+    inertia_chapter: {
+      add: [
+        { kind: "mc", q: "Два тела толкнули одинаково. Какое изменит скорость медленнее?", options: ["С большей массой", "С меньшей массой", "Более тёплое", "Более лёгкое"], correct: 0, solution: "Чем больше масса, тем больше инертность — скорость меняется труднее." },
+        { kind: "mc", q: "Зачем в автомобиле нужны ремни безопасности?", options: ["При резком торможении тело по инерции летит вперёд", "Чтобы было удобно сидеть", "Из-за трения", "Из-за силы тяжести"], correct: 0, solution: "При торможении тело сохраняет скорость по инерции и продолжает двигаться вперёд." },
+        { kind: "mc", q: "Мяч катится по ровному полу и постепенно останавливается. Почему?", options: ["Из-за силы трения", "Сам по себе, без причин", "Так велит инерция", "Из-за своей массы"], correct: 0, solution: "Без сил тело двигалось бы вечно; останавливает его сила трения." },
+      ],
+    },
+    // ——— Плотность ———
+    density_chapter: {
+      add: [
+        { kind: "num", q: "Плотность льда 900 кг/м³, объём 2 м³. Найди массу льда. (кг)", answer: 1800, unit: "кг", solution: "m = ρ·V = 900·2 = 1800 кг." },
+        { kind: "num", q: "Масса масла 720 кг, плотность 900 кг/м³. Найди объём. (м³)", answer: 0.8, unit: "м³", tol: 0.01, solution: "V = m/ρ = 720/900 = 0,8 м³." },
+        { kind: "mc", q: "Тело плотностью 700 кг/м³ опустили в воду (1000 кг/м³). Что будет?", options: ["Утонет", "Будет плавать", "Растворится", "Зависнет на середине"], correct: 1, solution: "Плотность тела меньше плотности воды — тело плавает." },
+      ],
+      boss: {
+        story: "Археологи нашли металлический брусок размером 20 × 10 × 5 см и массой 7,8 кг. Чтобы опознать металл, сначала вычисли объём бруска, а затем плотность.",
+        q: "Плотность металла (кг/м³):", answer: 7800, unit: "кг/м³",
+        hint: "Сначала объём: V = a·b·c (переведи см в метры: 0,2·0,1·0,05). Потом ρ = m/V.",
+        solution: "V = 0,2·0,1·0,05 = 0,001 м³; ρ = 7,8/0,001 = 7800 кг/м³ — это железо!",
+      },
+    },
+    // ——— Ускорение ———
+    acceleration_chapter: {
+      add: [
+        { kind: "num", q: "Тело со скоростью 4 м/с разгоняется с ускорением 3 м/с². Какой будет скорость через 2 с? (м/с)", answer: 10, unit: "м/с", solution: "υ = υ₀ + a·t = 4 + 3·2 = 10 м/с." },
+        { kind: "num", q: "Поезд разогнался с 36 км/ч до 72 км/ч за 5 с. Найди ускорение. (м/с²)", answer: 2, unit: "м/с²", solution: "36 км/ч = 10 м/с, 72 км/ч = 20 м/с; a = (20−10)/5 = 2 м/с²." },
+        { kind: "num", q: "Автомобиль тормозит с 20 м/с до 0 за 4 с. Найди модуль ускорения. (м/с²)", answer: 5, unit: "м/с²", solution: "a = (20−0)/4 = 5 м/с² (замедление)." },
+      ],
+      boss: {
+        story: "Звёздный корабль для прыжка должен разогнаться с 36 км/ч до 108 км/ч за 4 с. Сначала переведи обе скорости в м/с, затем найди нужное ускорение.",
+        q: "Ускорение (м/с²):", answer: 5, unit: "м/с²",
+        hint: "36 км/ч = 10 м/с, 108 км/ч = 30 м/с. Затем a = (υ − υ₀)/t.",
+        solution: "υ₀ = 10 м/с, υ = 30 м/с; a = (30−10)/4 = 5 м/с².",
+      },
+    },
+    // ——— Графики ———
+    graphs_chapter: {
+      add: [
+        { kind: "num", q: "По графику тело движется равномерно со скоростью 6 м/с. Какой путь оно пройдёт за 5 с? (м)", answer: 30, unit: "м", solution: "S = υ·t = 6·5 = 30 м." },
+        { kind: "num", q: "По графику пути: за 4 с тело прошло 24 м равномерно. Найди скорость. (м/с)", answer: 6, unit: "м/с", solution: "υ = S/t = 24/4 = 6 м/с." },
+        { kind: "mc", q: "На графике скорости линия горизонтальна. Какое это движение?", options: ["Равномерное", "Равноускоренное", "Покой", "Торможение"], correct: 0, solution: "Постоянная скорость на графике — равномерное движение." },
+      ],
+      boss: {
+        story: "На графике скорости корабль 6 секунд летит равномерно со скоростью 8 м/с. По графику определи скорость и найди расстояние до станции.",
+        q: "Путь (м):", answer: 48, unit: "м",
+        hint: "Скорость по графику постоянна (8 м/с). Путь S = υ·t.",
+        solution: "S = υ·t = 8·6 = 48 м.",
+      },
+    },
+    // ——— Вес ———
+    weight_chapter: {
+      add: [
+        { kind: "num", q: "Вес тела на неподвижной опоре 250 Н. Найди его массу (g = 10). (кг)", answer: 25, unit: "кг", solution: "m = P/g = 250/10 = 25 кг." },
+        { kind: "num", q: "Тело массой 4 кг на Луне (g = 1,6 Н/кг). Найди вес. (Н)", answer: 6.4, unit: "Н", tol: 0.05, solution: "P = m·g = 4·1,6 = 6,4 Н." },
+        { kind: "mc", q: "Чем вес отличается от силы тяжести?", options: ["Вес действует на опору или подвес", "Это одно и то же", "Вес — это масса", "Сила тяжести направлена вверх"], correct: 0, solution: "Сила тяжести приложена к телу, а вес — к опоре или подвесу." },
+      ],
+      boss: {
+        story: "Космический лифт поднимает алюминиевый контейнер объёмом 0,003 м³ (плотность алюминия 2700 кг/м³). Сначала найди массу контейнера, затем его вес на Земле.",
+        q: "Вес (Н):", answer: 81, unit: "Н",
+        hint: "Сначала масса m = ρ·V, потом вес P = m·g.",
+        solution: "m = 2700·0,003 = 8,1 кг; P = 8,1·10 = 81 Н.",
+      },
+    },
+    // ——— Силы ———
+    ch2: {
+      add: [
+        { kind: "num", q: "Вдоль одной прямой в одну сторону действуют силы 6 Н и 4 Н. Найди равнодействующую. (Н)", answer: 10, unit: "Н", solution: "Силы в одну сторону складываются: R = 6 + 4 = 10 Н." },
+        { kind: "num", q: "Навстречу действуют силы 9 Н и 5 Н. Найди равнодействующую. (Н)", answer: 4, unit: "Н", solution: "Противоположные силы вычитаются: R = 9 − 5 = 4 Н." },
+        { kind: "mc", q: "Тело движется равномерно и прямолинейно. Чему равна равнодействующая сил?", options: ["Нулю", "Весу тела", "Силе трения", "Массе"], correct: 0, solution: "При равномерном движении силы уравновешены — равнодействующая равна нулю." },
+      ],
+      boss: {
+        story: "В ядре Мира сил на платформу массой 5 кг сверху действует сила тяжести, а снизу её толкает вверх сила 30 Н. Найди равнодействующую силу. Сначала вспомни, чему равна сила тяжести.",
+        q: "Равнодействующая (Н):", answer: 20, unit: "Н",
+        hint: "Сначала вес (сила тяжести) P = m·g вниз. Затем вычти силу, направленную вверх.",
+        solution: "P = 5·10 = 50 Н вниз; R = 50 − 30 = 20 Н, направлена вниз.",
+      },
+    },
+    // ——— Давление ———
+    pressure_chapter: {
+      add: [
+        { kind: "num", q: "Давление 500 Па создаётся на площади 0,2 м². Найди силу давления. (Н)", answer: 100, unit: "Н", solution: "F = p·S = 500·0,2 = 100 Н." },
+        { kind: "num", q: "Сила 1200 Н создаёт давление 400 Па. Найди площадь опоры. (м²)", answer: 3, unit: "м²", solution: "S = F/p = 1200/400 = 3 м²." },
+        { kind: "mc", q: "Почему острый нож режет лучше тупого?", options: ["Меньше площадь — больше давление", "Больше сила", "Больше масса", "Меньше вес"], correct: 0, solution: "У острого ножа меньше площадь лезвия, поэтому давление больше." },
+      ],
+      boss: {
+        story: "Робот массой 40 кг застрял на тонком льду, который выдерживает давление не больше 1000 Па. Какую площадь опоры должны иметь его лыжи, чтобы не провалиться? Сначала найди вес робота.",
+        q: "Площадь (м²):", answer: 0.4, unit: "м²", tol: 0.01,
+        hint: "Сначала вес P = m·g. Затем из p = F/S вырази S = P/p.",
+        solution: "P = 40·10 = 400 Н; S = P/p = 400/1000 = 0,4 м².",
+      },
+    },
+    // ——— Архимед ———
+    ch3: {
+      add: [
+        { kind: "num", q: "Тело объёмом 0,003 м³ полностью погружено в воду. Найди выталкивающую силу (g = 10). (Н)", answer: 30, unit: "Н", solution: "F_A = ρ·g·V = 1000·10·0,003 = 30 Н." },
+        { kind: "num", q: "В керосине (800 кг/м³) полностью погружено тело объёмом 0,002 м³. Найди силу Архимеда. (Н)", answer: 16, unit: "Н", solution: "F_A = 800·10·0,002 = 16 Н." },
+        { kind: "mc", q: "От чего зависит выталкивающая сила?", options: ["От плотности жидкости и объёма погружённой части", "От массы тела", "От формы тела", "От цвета тела"], correct: 0, solution: "F_A = ρ·g·V_погр — от плотности жидкости и погружённого объёма." },
+      ],
+      boss: {
+        story: "Чтобы поднять часть города, нужен поплавок. Камень массой 6 кг и плотностью 3000 кг/м³ лежит полностью под водой. Найди выталкивающую силу. Сначала определи объём камня.",
+        q: "Сила Архимеда (Н):", answer: 20, unit: "Н",
+        hint: "Сначала объём V = m/ρ. Потом F_A = ρ_воды·g·V.",
+        solution: "V = 6/3000 = 0,002 м³; F_A = 1000·10·0,002 = 20 Н.",
+      },
+    },
+    // ——— Гидравлика ———
+    hydraulic_chapter: {
+      add: [
+        { kind: "num", q: "Площади поршней 0,002 м² и 0,02 м². На малый действует 50 Н. Найди силу на большом. (Н)", answer: 500, unit: "Н", solution: "Выигрыш = 0,02/0,002 = 10; F₂ = 50·10 = 500 Н." },
+        { kind: "num", q: "Во сколько раз пресс усилит силу, если поршни 5 см² и 100 см²? (раз)", answer: 20, unit: "раз", solution: "Выигрыш = S₂/S₁ = 100/5 = 20 раз." },
+        { kind: "mc", q: "На чём основана работа гидравлического пресса?", options: ["На законе Паскаля", "На инерции", "На трении", "На силе тяжести"], correct: 0, solution: "Давление в жидкости передаётся одинаково во все стороны — закон Паскаля." },
+      ],
+      boss: {
+        story: "Домкрат поднимает автомобиль. Малый поршень площадью 0,001 м², большой — 0,05 м². На малый давит сила 60 Н. Какой вес поднимет большой поршень? Сначала найди давление под малым поршнем.",
+        q: "Сила (Н):", answer: 3000, unit: "Н",
+        hint: "Сначала давление p = F₁/S₁. Затем F₂ = p·S₂.",
+        solution: "p = 60/0,001 = 60 000 Па; F₂ = 60 000·0,05 = 3000 Н.",
+      },
+    },
+    // ——— Простые механизмы ———
+    machines: {
+      add: [
+        { kind: "num", q: "На плече 0,5 м действует сила 40 Н. Какая сила на плече 0,2 м уравновесит рычаг? (Н)", answer: 100, unit: "Н", solution: "F₁·l₁ = F₂·l₂ → F₂ = 40·0,5/0,2 = 100 Н." },
+        { kind: "num", q: "Груз весом 600 Н на плече 0,3 м. Длинное плечо 1,8 м. Какую силу приложить? (Н)", answer: 100, unit: "Н", solution: "F = 600·0,3/1,8 = 100 Н." },
+        { kind: "mc", q: "Золотое правило механики: выигрывая в силе, проигрываем в...", options: ["Пути", "Массе", "Времени навсегда", "Энергии"], correct: 0, solution: "Во сколько раз выигрываем в силе, во столько же проигрываем в пути." },
+      ],
+      boss: {
+        story: "Главный подъёмник — это рычаг. На коротком плече 0,2 м висит ящик массой 30 кг, длинное плечо 1,2 м. Какую силу нужно приложить к длинному плечу? Сначала найди вес ящика.",
+        q: "Сила (Н):", answer: 50, unit: "Н",
+        hint: "Сначала вес P = m·g. Затем правило рычага: F = P·l₁/l₂.",
+        solution: "P = 30·10 = 300 Н; F = 300·0,2/1,2 = 50 Н.",
+      },
+    },
+    // ——— Плавание ———
+    floating_chapter: {
+      add: [
+        { kind: "mc", q: "Когда тело плавает на поверхности?", options: ["Сила Архимеда равна весу", "Вес больше силы Архимеда", "Сила Архимеда равна нулю", "Вес равен нулю"], correct: 0, solution: "При плавании выталкивающая сила уравновешивает вес тела." },
+        { kind: "num", q: "Тело плотностью 800 кг/м³ плавает в воде. Какая часть его объёма погружена?", answer: 0.8, unit: "", tol: 0.01, solution: "Доля = ρ_тела/ρ_воды = 800/1000 = 0,8 (80 %)." },
+        { kind: "mc", q: "Почему стальной корабль не тонет?", options: ["Внутри много воздуха — средняя плотность мала", "Сталь легче воды", "Нет силы тяжести", "Вода очень плотная"], correct: 0, solution: "Корпус с воздухом имеет среднюю плотность меньше воды." },
+      ],
+      boss: {
+        story: "Деревянный плот объёмом 4 м³ (плотность дерева 600 кг/м³) плавает в воде. Какой максимальный груз по весу он удержит, прежде чем уйдёт под воду? Сравни вес плота с максимальной силой Архимеда.",
+        q: "Максимальный груз (Н):", answer: 16000, unit: "Н",
+        hint: "Макс. сила Архимеда (полное погружение) F = ρ_воды·g·V. Вес плота P = ρ_дерева·g·V. Груз = разность.",
+        solution: "F_A = 1000·10·4 = 40 000 Н; P = 600·10·4 = 24 000 Н; груз = 40 000 − 24 000 = 16 000 Н.",
+      },
+    },
+    // ——— Манометры / давление ———
+    manometers_chapter: {
+      add: [
+        { kind: "num", q: "Вырази давление 2 атмосферы в паскалях (1 атм ≈ 100 000 Па). (Па)", answer: 200000, unit: "Па", solution: "2·100 000 = 200 000 Па." },
+        { kind: "num", q: "Найди давление воды на глубине 4 м (g = 10). (Па)", answer: 40000, unit: "Па", solution: "p = ρ·g·h = 1000·10·4 = 40 000 Па." },
+        { kind: "mc", q: "Каким прибором измеряют атмосферное давление?", options: ["Барометром", "Манометром", "Термометром", "Динамометром"], correct: 0, solution: "Атмосферное давление измеряют барометром." },
+      ],
+      boss: {
+        story: "Манометр опустили на глубину 3 м в воду. Он показывает полное давление: атмосферное (100 000 Па) плюс давление столба воды. Найди полное давление. Сначала вычисли давление воды.",
+        q: "Полное давление (Па):", answer: 130000, unit: "Па",
+        hint: "Давление воды p = ρ·g·h. Прибавь атмосферное 100 000 Па.",
+        solution: "p_воды = 1000·10·3 = 30 000 Па; полное = 100 000 + 30 000 = 130 000 Па.",
+      },
+    },
+    // ——— Энергия ———
+    energy_chapter: {
+      add: [
+        { kind: "num", q: "Сила 20 Н переместила тело на 6 м. Найди работу. (Дж)", answer: 120, unit: "Дж", solution: "A = F·s = 20·6 = 120 Дж." },
+        { kind: "num", q: "Двигатель совершил работу 600 Дж за 30 с. Найди мощность. (Вт)", answer: 20, unit: "Вт", solution: "N = A/t = 600/30 = 20 Вт." },
+        { kind: "num", q: "Тело массой 3 кг подняли на 4 м. Найди потенциальную энергию (g = 10). (Дж)", answer: 120, unit: "Дж", solution: "Eₚ = m·g·h = 3·10·4 = 120 Дж." },
+      ],
+      boss: {
+        story: "Катапульта подбрасывает камень массой 2 кг на высоту 5 м. Какую кинетическую энергию будет иметь камень в момент падения на землю? Сначала найди его потенциальную энергию вверху.",
+        q: "Кинетическая энергия (Дж):", answer: 100, unit: "Дж",
+        hint: "Сначала Eₚ = m·g·h. По закону сохранения вся она перейдёт в Eₖ.",
+        solution: "Eₚ = 2·10·5 = 100 Дж; у земли Eₖ = Eₚ = 100 Дж.",
+      },
+    },
+  };
+
+  // Доп. сюжетные реплики в начало «тонких» глав — чтобы история была полнее,
+  // как в первой главе, и плавно подводила к теме.
+  function L(mood, text) { return { type: "line", speaker: "Ньютончик", mood: mood, emoji: mood === "explain" ? "🔬" : "🧑‍🔬", text: text }; }
+  var INTRO = {
+    inertia_chapter: [
+      L("explain", "Гляди: толкнул шайбу — и она летит по льду, не желая останавливаться. А чтобы сдвинуть тяжёлый сундук, приходится попотеть. Всё дело в инертности тел."),
+      L("happy", "Тело само хранит свою скорость — и покой, и движение. Изменить её может только другое тело: толчок, удар или трение. Вернём телам эту память о движении!"),
+    ],
+    density_chapter: [
+      L("explain", "Смотри: деревянный брусок и стальной гвоздь одного размера. Раньше дерево всплывало, а сталь тонула — теперь всё наоборот! Хаос подменил саму плотность."),
+      L("happy", "Чтобы навести порядок, нужно сравнивать вещества честно — не по размеру и не по весу отдельно, а по тому, сколько массы умещается в каждом кубическом метре."),
+    ],
+    acceleration_chapter: [
+      L("explain", "Этот болид то прыгает вперёд, будто его пнули, то замирает на полном ходу. Скорость скачет как попало — значит, сломалось само ускорение."),
+      L("happy", "Ускорение — это не про то, быстро ли едет тело, а про то, как быстро меняется его скорость. Починим этот «датчик перемен» — и движение станет предсказуемым."),
+    ],
+    graphs_chapter: [
+      L("explain", "Взгляни на приборы: вместо ровных линий — каша из зигзагов. А ведь по графику читается всё движение: где тело стоит, где разгоняется, какой путь прошло."),
+      L("happy", "Линия на графике — это язык движения. Чем круче линия пути, тем быстрее тело; ровная горизонталь на графике скорости — значит, движение равномерное. Научимся читать!"),
+    ],
+    weight_chapter: [
+      L("explain", "Видишь космонавта? На орбите он парит, будто ничего не весит, а на земных весах стрелка зашкаливает. Хаос перепутал вес с силой тяжести."),
+      L("happy", "Сила тяжести тянет тело к планете, а вес — это с какой силой тело давит на опору или подвес. Разберёмся, чем они отличаются, — и порядок вернётся."),
+    ],
+    pressure_chapter: [
+      L("explain", "Смотри: тяжёлый трактор проваливается в землю, а острый гвоздь не протыкает даже бумагу. Сила есть, а толку нет — забыли, что важна ещё и площадь."),
+      L("happy", "Давление показывает, как сила распределена по площади. На остром кончике та же сила даёт огромное давление, а на широкой опоре — крошечное. Вернём этот баланс!"),
+    ],
+    hydraulic_chapter: [
+      L("explain", "Эти прессы и домкраты раньше поднимали корабли лёгким нажатием. Теперь они мертвы: жидкость внутри перестала передавать давление."),
+      L("happy", "А в этом вся хитрость: жидкость передаёт давление одинаково во все стороны. Нажми слегка на узкий поршень — широкий поднимет огромный груз. Закон Паскаля, оживай!"),
+    ],
+    floating_chapter: [
+      L("explain", "Гавань в панике: стальные баржи уходят на дно, а щепки и галька горделиво качаются на волнах. Кто-то перепутал, кому плавать, а кому тонуть."),
+      L("happy", "Всё решает спор двух сил: вес тянет вниз, а выталкивающая сила Архимеда толкает вверх. Кто победит — тот и решит судьбу тела. Восстановим правила!"),
+    ],
+    manometers_chapter: [
+      L("explain", "Один манометр уверяет, что давления нет вовсе, другой — что оно зашкаливает. Измерять давление стало невозможно."),
+      L("happy", "Манометр меряет давление по высоте столбика жидкости, а барометр ловит давление воздуха вокруг. Настроим приборы заново — и числа снова станут честными."),
+    ],
+    energy_chapter: [
+      L("explain", "Самый коварный сбой: мяч сам подскакивает к потолку, а поднятый груз вдруг теряет всю силу. Энергия то появляется из ниоткуда, то исчезает в никуда."),
+      L("happy", "Но энергия не берётся из пустоты и не пропадает — она лишь переходит из формы в форму: поднятое тело копит потенциальную, движущееся — кинетическую. Вернём этот закон!"),
+    ],
+  };
+
+  (window.GAME.chapters || []).forEach(function (ch) {
+    var ex = EXTRA[ch.id];
+    if (!ex) return;
+    var scenes = ch.scenes || [];
+    // расширенная практика
+    if (ex.add) {
+      var pr = scenes.find(function (s) { return s.type === "practice"; });
+      if (pr && Array.isArray(pr.items)) pr.items = pr.items.concat(ex.add);
+    }
+    // усиленный многотемный босс
+    if (ex.boss) {
+      var bo = scenes.find(function (s) { return s.type === "boss"; });
+      if (bo) {
+        delete bo.options; delete bo.choices; delete bo.correct;
+        Object.assign(bo, ex.boss);
+      }
+    }
+    // доп. сюжетные реплики (после первой реплики-завязки)
+    if (INTRO[ch.id]) {
+      var fi = scenes.findIndex(function (s) { return s.type === "line"; });
+      if (fi >= 0) Array.prototype.splice.apply(scenes, [fi + 1, 0].concat(INTRO[ch.id]));
+    }
+  });
+})();
+
+</script>
+    <script>
+/* js/course.js */
 /* ============================================================
    ФизМат RPG — course.js
    ВСТРОЕННЫЙ УЧЕБНИК (теория + задачи), по классам.
@@ -4484,7 +5166,9 @@ GAME.course = {
 
 if (typeof window !== "undefined") window.GAME = GAME;
 
-/* ===== js/realms.js ===== */
+</script>
+    <script>
+/* js/realms.js */
 /* ============================================================
    ФизМат RPG — realms.js
    «Миры» — атлас вселенной физики 7 класса. У каждого мира свой ЛОР
@@ -4616,7 +5300,472 @@ GAME.realms = [
 
 if (typeof window !== "undefined") window.GAME = GAME;
 
-/* ===== js/art.js ===== */
+</script>
+    <script>
+/* js/problems.js */
+/* ============================================================
+   ФизМат RPG — problems.js
+   БОЛЬШОЙ банк комплексных задач 7 класса (формат ОГЭ).
+   Дано / Найти / Решение / Ответ. Задачи многошаговые, переплетают темы.
+   ============================================================ */
+GAME.problems = {
+  grade7: [
+    {
+      id: "combo", title: "🔗 Комбинированные задачи", sub: "Несколько тем в одной задаче",
+      problems: [
+        { q: "Алюминиевый брусок объёмом 2 м³ лежит на полу, опираясь гранью площадью 0,5 м². Найдите массу, вес и давление на пол.",
+          given: ["V = 2 м³", "S = 0,5 м²", "ρ = 2700 кг/м³", "g = 10 Н/кг"], find: "m, P, p — ?",
+          steps: ["m = ρ·V = 2700 · 2 = 5400 кг.", "P = m·g = 5400 · 10 = 54 000 Н.", "p = P / S = 54 000 / 0,5 = 108 000 Па."], answer: "m = 5400 кг, P = 54 кН, p = 108 кПа." },
+        { q: "Бассейн заполнен водой до глубины 3 м. Найдите давление воды на дно и силу давления на дно площадью 20 м².",
+          given: ["h = 3 м", "S = 20 м²", "ρ = 1000 кг/м³", "g = 10 Н/кг"], find: "p, F — ?",
+          steps: ["p = ρ·g·h = 1000 · 10 · 3 = 30 000 Па.", "F = p·S = 30 000 · 20 = 600 000 Н."], answer: "p = 30 кПа, F = 600 кН." },
+        { q: "Деревянный брусок плотностью 600 кг/м³ и объёмом 0,02 м³ плавает в воде. Какая часть объёма погружена и какова выталкивающая сила?",
+          given: ["ρ = 600 кг/м³", "V = 0,02 м³", "ρ_в = 1000 кг/м³", "g = 10 Н/кг"], find: "доля, F_A — ?",
+          steps: ["F_A = P = ρ·V·g = 600 · 0,02 · 10 = 120 Н.", "V_погр = F_A /(ρ_в·g) = 120 /(1000·10) = 0,012 м³.", "доля = 0,012 / 0,02 = 0,6."], answer: "Погружено 60 %, F_A = 120 Н." },
+        { q: "Кран поднял груз массой 500 кг на высоту 12 м за 20 с. КПД 80 %. Найдите полезную и затраченную работу и полезную мощность.",
+          given: ["m = 500 кг", "h = 12 м", "t = 20 с", "КПД = 80 %", "g = 10"], find: "A_п, A_з, N — ?",
+          steps: ["A_п = m·g·h = 500 · 10 · 12 = 60 000 Дж.", "A_з = A_п / КПД = 60 000 / 0,8 = 75 000 Дж.", "N = A_п / t = 60 000 / 20 = 3000 Вт."], answer: "A_п = 60 кДж, A_з = 75 кДж, N = 3 кВт." },
+        { q: "На коротком плече рычага 0,4 м висит груз весом 600 Н, длинное плечо 1,2 м. Какую силу приложить к длинному плечу и какую работу она совершит, опустив конец на 0,3 м?",
+          given: ["l₁ = 0,4 м", "P = 600 Н", "l₂ = 1,2 м", "s = 0,3 м"], find: "F, A — ?",
+          steps: ["F·l₂ = P·l₁ → F = 600 · 0,4 / 1,2 = 200 Н.", "A = F·s = 200 · 0,3 = 60 Дж."], answer: "F = 200 Н, A = 60 Дж." },
+        { q: "Велосипедист 1200 м ехал со скоростью 6 м/с, затем 900 м со скоростью 9 м/с. Найдите время на каждом участке и среднюю скорость.",
+          given: ["S₁ = 1200 м", "υ₁ = 6 м/с", "S₂ = 900 м", "υ₂ = 9 м/с"], find: "t₁, t₂, υ_ср — ?",
+          steps: ["t₁ = 1200 / 6 = 200 с.", "t₂ = 900 / 9 = 100 с.", "υ_ср = (1200+900)/(200+100) = 2100/300 = 7 м/с."], answer: "t₁ = 200 с, t₂ = 100 с, υ_ср = 7 м/с." },
+        { q: "У гидравлического пресса площади поршней 10 см² и 250 см². На малый поршень действует 200 Н. Найдите давление под малым поршнем и силу на большом.",
+          given: ["S₁ = 0,001 м²", "S₂ = 0,025 м²", "F₁ = 200 Н"], find: "p, F₂ — ?",
+          steps: ["p = F₁ / S₁ = 200 / 0,001 = 200 000 Па.", "F₂ = p·S₂ = 200 000 · 0,025 = 5000 Н."], answer: "p = 200 кПа, F₂ = 5000 Н." },
+        { q: "Тело массой 2 кг падает без трения с высоты 5 м. Найдите потенциальную энергию вверху и кинетическую энергию у земли.",
+          given: ["m = 2 кг", "h = 5 м", "g = 10"], find: "E_п, E_к — ?",
+          steps: ["E_п = m·g·h = 2 · 10 · 5 = 100 Дж.", "По закону сохранения энергии у земли E_к = E_п = 100 Дж."], answer: "E_п = 100 Дж, E_к = 100 Дж." },
+        { q: "Льдина площадью 2 м² и толщиной 0,3 м (ρ = 900 кг/м³) плавает в воде. Найдите её массу и максимальный дополнительный груз, который она удержит. Выдержит ли человека массой 70 кг?",
+          given: ["S = 2 м²", "h = 0,3 м", "ρ_л = 900", "ρ_в = 1000", "g = 10"], find: "m, груз — ?",
+          steps: ["V = S·h = 2 · 0,3 = 0,6 м³.", "m = ρ_л·V = 900 · 0,6 = 540 кг, вес 5400 Н.", "Макс. выталкивание (полное погружение): F = ρ_в·g·V = 1000·10·0,6 = 6000 Н.", "Запас = 6000 − 5400 = 600 Н → груз до 60 кг."], answer: "m = 540 кг; удержит до 60 кг, значит человека 70 кг не выдержит." },
+        { q: "Насос мощностью 400 Вт поднимает воду на высоту 5 м (КПД 100 %). Какой объём воды он поднимет за 1 минуту?",
+          given: ["N = 400 Вт", "h = 5 м", "t = 60 с", "g = 10", "ρ = 1000"], find: "V — ?",
+          steps: ["A = N·t = 400 · 60 = 24 000 Дж.", "m = A /(g·h) = 24 000 /(10·5) = 480 кг.", "V = m / ρ = 480 / 1000 = 0,48 м³."], answer: "V = 0,48 м³ (480 л)." },
+        { q: "В бак налили 200 л воды, высота воды 0,5 м. Найдите массу воды, давление на дно и силу давления на дно площадью 0,4 м².",
+          given: ["V = 200 л = 0,2 м³", "h = 0,5 м", "S = 0,4 м²", "ρ = 1000", "g = 10"], find: "m, p, F — ?",
+          steps: ["m = ρ·V = 1000 · 0,2 = 200 кг.", "p = ρ·g·h = 1000 · 10 · 0,5 = 5000 Па.", "F = p·S = 5000 · 0,4 = 2000 Н."], answer: "m = 200 кг, p = 5000 Па, F = 2000 Н." },
+        { q: "Кубик со стороной 10 см плавает в воде, погрузившись на 6 см. Найдите плотность материала кубика.",
+          given: ["a = 0,1 м", "h_погр = 0,06 м", "ρ_в = 1000", "g = 10"], find: "ρ — ?",
+          steps: ["V = 0,1³ = 0,001 м³.", "V_погр = 0,1·0,1·0,06 = 0,0006 м³.", "F_A = ρ_в·g·V_погр = 1000·10·0,0006 = 6 Н = вес → m = 0,6 кг.", "ρ = m/V = 0,6/0,001 = 600 кг/м³."], answer: "ρ = 600 кг/м³." },
+      ],
+    },
+    {
+      id: "kin", title: "🏃 Движение и ускорение", sub: "Путь, скорость, ускорение, графики",
+      problems: [
+        { q: "Поезд, трогаясь с места, за 20 с набрал скорость 72 км/ч. Найдите ускорение и путь.",
+          given: ["υ₀ = 0", "t = 20 с", "υ = 20 м/с"], find: "a, s — ?",
+          steps: ["a = (υ − υ₀)/t = 20/20 = 1 м/с².", "s = a·t²/2 = 1·400/2 = 200 м."], answer: "a = 1 м/с², s = 200 м." },
+        { q: "Автомобиль едет со скоростью 90 км/ч. Сколько метров он проедет за 4 с?",
+          given: ["υ = 90 км/ч = 25 м/с", "t = 4 с"], find: "s — ?",
+          steps: ["s = υ·t = 25 · 4 = 100 м."], answer: "s = 100 м." },
+        { q: "Тело из покоя за 6 с прошло 54 м равноускоренно. Найдите ускорение.",
+          given: ["υ₀ = 0", "t = 6 с", "s = 54 м"], find: "a — ?",
+          steps: ["s = a·t²/2 → a = 2s/t² = 2·54/36 = 3 м/с²."], answer: "a = 3 м/с²." },
+        { q: "Поезд длиной 200 м едет со скоростью 20 м/с. За какое время он проедет мост длиной 300 м?",
+          given: ["L_поезда = 200 м", "L_моста = 300 м", "υ = 20 м/с"], find: "t — ?",
+          steps: ["Путь = 200 + 300 = 500 м (пока весь поезд пройдёт мост).", "t = S/υ = 500/20 = 25 с."], answer: "t = 25 с." },
+        { q: "Турист прошёл 6 км за 1,5 часа. Найдите среднюю скорость в км/ч и в м/с.",
+          given: ["S = 6 км", "t = 1,5 ч"], find: "υ — ?",
+          steps: ["υ = 6/1,5 = 4 км/ч.", "4 / 3,6 ≈ 1,1 м/с."], answer: "υ = 4 км/ч ≈ 1,1 м/с." },
+        { q: "Велосипедист тормозит с 10 м/с до полной остановки за 5 с. Найдите модуль ускорения (замедление).",
+          given: ["υ₀ = 10 м/с", "υ = 0", "t = 5 с"], find: "a — ?",
+          steps: ["За 5 с скорость уменьшилась на 10 м/с.", "a = Δυ/t = 10/5 = 2 м/с² (направлено против движения)."], answer: "a = 2 м/с² (замедление)." },
+        { q: "Из двух посёлков навстречу вышли пешеходы (1 м/с и 1,5 м/с). Расстояние 3000 м. Через сколько они встретятся?",
+          given: ["υ₁ = 1 м/с", "υ₂ = 1,5 м/с", "S = 3000 м"], find: "t — ?",
+          steps: ["Скорость сближения = 1 + 1,5 = 2,5 м/с.", "t = S/υ = 3000/2,5 = 1200 с = 20 мин."], answer: "t = 1200 с (20 мин)." },
+        { q: "Стальной брусок 0,2 м × 0,1 м × 0,05 м. Найдите объём, массу и вес.",
+          given: ["a·b·c = 0,2·0,1·0,05", "ρ = 7800", "g = 10"], find: "V, m, P — ?",
+          steps: ["V = 0,2·0,1·0,05 = 0,001 м³.", "m = ρ·V = 7800·0,001 = 7,8 кг.", "P = m·g = 78 Н."], answer: "V = 0,001 м³, m = 7,8 кг, P = 78 Н." },
+      ],
+    },
+    {
+      id: "forces", title: "⚖️ Силы, масса, плотность, вес", sub: "Тяжесть, упругость, трение, вес",
+      problems: [
+        { q: "На тело массой 4 кг действует направленная вверх сила 30 Н и сила тяжести. Найдите равнодействующую и направление.",
+          given: ["m = 4 кг", "F = 30 Н вверх", "g = 10"], find: "R — ?",
+          steps: ["P = m·g = 40 Н вниз.", "R = 40 − 30 = 10 Н, вниз."], answer: "R = 10 Н, вниз." },
+        { q: "Пружина жёсткостью 200 Н/м растянута на 5 см. Найдите силу упругости.",
+          given: ["k = 200 Н/м", "x = 0,05 м"], find: "F — ?",
+          steps: ["F = k·x = 200 · 0,05 = 10 Н."], answer: "F = 10 Н." },
+        { q: "Под действием груза пружина (k = 250 Н/м) удлинилась на 4 см. Найдите массу груза.",
+          given: ["k = 250 Н/м", "x = 0,04 м", "g = 10"], find: "m — ?",
+          steps: ["F = k·x = 250 · 0,04 = 10 Н.", "F = m·g → m = 10/10 = 1 кг."], answer: "m = 1 кг." },
+        { q: "На движущееся тело действуют сила тяги 12 Н и направленная против движения сила трения 4 Н. Найдите равнодействующую силу и её направление.",
+          given: ["F = 12 Н", "F_тр = 4 Н"], find: "R — ?",
+          steps: ["Силы направлены противоположно, поэтому вычитаем: R = 12 − 4 = 8 Н.", "Равнодействующая направлена в сторону большей силы — по направлению движения."], answer: "R = 8 Н, по направлению движения." },
+        { q: "Найдите силу тяжести на Луне для тела массой 6 кг (g_Луны = 1,6 Н/кг).",
+          given: ["m = 6 кг", "g = 1,6 Н/кг"], find: "P — ?",
+          steps: ["P = m·g = 6 · 1,6 = 9,6 Н."], answer: "P = 9,6 Н." },
+        { q: "Тело весит 50 Н на Земле. Какова его масса и сколько оно будет весить на планете с g = 4 Н/кг?",
+          given: ["P = 50 Н", "g = 10", "g₂ = 4"], find: "m, P₂ — ?",
+          steps: ["m = P/g = 50/10 = 5 кг.", "P₂ = m·g₂ = 5·4 = 20 Н."], answer: "m = 5 кг, P₂ = 20 Н." },
+        { q: "Тело массой 5 кг висит неподвижно на нити. Найдите силу натяжения нити.",
+          given: ["m = 5 кг", "тело в покое", "g = 10"], find: "T — ?",
+          steps: ["Тело в равновесии: нить удерживает вес тела, поэтому T = P = m·g.", "T = 5 · 10 = 50 Н."], answer: "T = 50 Н." },
+        { q: "Тело массой 500 г имеет объём 200 см³. Найдите плотность (в г/см³ и кг/м³) и определите, утонет ли оно в воде.",
+          given: ["m = 500 г", "V = 200 см³", "ρ_в = 1000"], find: "ρ — ?",
+          steps: ["ρ = m/V = 500/200 = 2,5 г/см³ = 2500 кг/м³.", "2500 > 1000 → утонет."], answer: "ρ = 2,5 г/см³ = 2500 кг/м³, утонет." },
+        { q: "Брусок из дуба объёмом 0,05 м³ (ρ = 700 кг/м³). Найдите массу и вес.",
+          given: ["V = 0,05 м³", "ρ = 700", "g = 10"], find: "m, P — ?",
+          steps: ["m = ρ·V = 700·0,05 = 35 кг.", "P = m·g = 350 Н."], answer: "m = 35 кг, P = 350 Н." },
+      ],
+    },
+    {
+      id: "pressure", title: "🌊 Давление, жидкости, Архимед", sub: "Давление, Паскаль, выталкивающая сила",
+      problems: [
+        { q: "Кирпич массой 3,6 кг имеет грани 0,25 × 0,12 м и 0,25 × 0,06 м. Найдите давление на стол на большей и меньшей грани.",
+          given: ["m = 3,6 кг", "S₁ = 0,03 м²", "S₂ = 0,015 м²", "g = 10"], find: "p₁, p₂ — ?",
+          steps: ["P = m·g = 36 Н.", "p₁ = 36/0,03 = 1200 Па.", "p₂ = 36/0,015 = 2400 Па."], answer: "p₁ = 1200 Па, p₂ = 2400 Па." },
+        { q: "Тело объёмом 0,005 м³ полностью погружено. Найдите выталкивающую силу в воде и в керосине.",
+          given: ["V = 0,005 м³", "ρ_в = 1000", "ρ_к = 800", "g = 10"], find: "F_в, F_к — ?",
+          steps: ["F_в = 1000·10·0,005 = 50 Н.", "F_к = 800·10·0,005 = 40 Н."], answer: "F_в = 50 Н, F_к = 40 Н." },
+        { q: "На какой глубине в воде давление воды равно нормальному атмосферному (100 кПа)?",
+          given: ["p = 100 000 Па", "ρ = 1000", "g = 10"], find: "h — ?",
+          steps: ["h = p/(ρ·g) = 100 000/(1000·10) = 10 м."], answer: "h = 10 м." },
+        { q: "Какое давление на глубине 5 м в морской воде (ρ = 1030 кг/м³)?",
+          given: ["h = 5 м", "ρ = 1030", "g = 10"], find: "p — ?",
+          steps: ["p = ρ·g·h = 1030·10·5 = 51 500 Па."], answer: "p ≈ 51,5 кПа." },
+        { q: "На поршень площадью 0,02 м² действует сила 50 Н. Найдите давление.",
+          given: ["F = 50 Н", "S = 0,02 м²"], find: "p — ?",
+          steps: ["p = F/S = 50/0,02 = 2500 Па."], answer: "p = 2500 Па." },
+        { q: "Гидравлический пресс: поршни 4 см² и 80 см², на малый давят 120 Н. Найдите выигрыш в силе и силу на большом поршне.",
+          given: ["S₁ = 4 см²", "S₂ = 80 см²", "F₁ = 120 Н"], find: "выигрыш, F₂ — ?",
+          steps: ["Выигрыш = S₂/S₁ = 80/4 = 20 раз.", "F₂ = F₁·20 = 120·20 = 2400 Н."], answer: "В 20 раз, F₂ = 2400 Н." },
+        { q: "Тело объёмом 0,0015 м³ погрузили в воду наполовину. Найдите выталкивающую силу.",
+          given: ["V = 0,0015 м³", "ρ = 1000", "g = 10"], find: "F_A — ?",
+          steps: ["V_погр = 0,00075 м³.", "F_A = 1000·10·0,00075 = 7,5 Н."], answer: "F_A = 7,5 Н." },
+        { q: "Стальной шар весит в воздухе 78 Н, а в воде 68 Н. Найдите выталкивающую силу и объём шара.",
+          given: ["P_возд = 78 Н", "P_вода = 68 Н", "ρ = 1000", "g = 10"], find: "F_A, V — ?",
+          steps: ["F_A = 78 − 68 = 10 Н.", "V = F_A/(ρ·g) = 10/10 000 = 0,001 м³."], answer: "F_A = 10 Н, V = 0,001 м³." },
+        { q: "Найдите давление воды на дно стакана высотой 12 см.",
+          given: ["h = 0,12 м", "ρ = 1000", "g = 10"], find: "p — ?",
+          steps: ["p = ρ·g·h = 1000·10·0,12 = 1200 Па."], answer: "p = 1200 Па." },
+      ],
+    },
+    {
+      id: "energy", title: "⚙️ Работа, мощность, механизмы, энергия", sub: "A, N, рычаг, КПД, энергия",
+      problems: [
+        { q: "Брусок равномерно тянут по столу силой 25 Н на расстояние 8 м. Найдите работу тянущей силы и силу трения.",
+          given: ["F = 25 Н", "s = 8 м", "движение равномерное"], find: "A, F_тр — ?",
+          steps: ["A = F·s = 25 · 8 = 200 Дж.", "При равномерном движении тянущая сила уравновешивает трение: F_тр = F = 25 Н."], answer: "A = 200 Дж, F_тр = 25 Н." },
+        { q: "Человек массой 60 кг поднялся по лестнице на 5 м за 10 с. Найдите работу и мощность.",
+          given: ["m = 60 кг", "h = 5 м", "t = 10 с", "g = 10"], find: "A, N — ?",
+          steps: ["A = m·g·h = 60·10·5 = 3000 Дж.", "N = A/t = 300 Вт."], answer: "A = 3000 Дж, N = 300 Вт." },
+        { q: "Груз весом 200 Н втащили по гладкой наклонной плоскости длиной 4 м на высоту 1 м. Какую силу прикладывали вдоль плоскости?",
+          given: ["P = 200 Н", "l = 4 м", "h = 1 м", "без трения"], find: "F — ?",
+          steps: ["Золотое правило: F·l = P·h.", "F = P·h/l = 200·1/4 = 50 Н."], answer: "F = 50 Н (выигрыш в 4 раза)." },
+        { q: "Подъёмник поднимает 200 кг на 15 м. Какую работу он совершает?",
+          given: ["m = 200 кг", "h = 15 м", "g = 10"], find: "A — ?",
+          steps: ["A = m·g·h = 200·10·15 = 30 000 Дж."], answer: "A = 30 кДж." },
+        { q: "Двигатель мощностью 2 кВт работает 30 с. Какую работу он совершит?",
+          given: ["N = 2000 Вт", "t = 30 с"], find: "A — ?",
+          steps: ["A = N·t = 2000·30 = 60 000 Дж."], answer: "A = 60 кДж." },
+        { q: "Рычаг: на одном плече сила 80 Н при плече 0,5 м, другое плечо 0,2 м. Какая сила уравновесит рычаг?",
+          given: ["F₁ = 80 Н", "l₁ = 0,5 м", "l₂ = 0,2 м"], find: "F₂ — ?",
+          steps: ["F₁·l₁ = F₂·l₂ → F₂ = 80·0,5/0,2 = 200 Н."], answer: "F₂ = 200 Н." },
+        { q: "КПД наклонной плоскости 60 %, полезная работа 240 Дж. Найдите затраченную работу.",
+          given: ["КПД = 60 %", "A_п = 240 Дж"], find: "A_з — ?",
+          steps: ["A_з = A_п/КПД = 240/0,6 = 400 Дж."], answer: "A_з = 400 Дж." },
+        { q: "Тело массой 5 кг движется со скоростью 4 м/с. Найдите кинетическую энергию.",
+          given: ["m = 5 кг", "υ = 4 м/с"], find: "E_к — ?",
+          steps: ["E_к = m·υ²/2 = 5·16/2 = 40 Дж."], answer: "E_к = 40 Дж." },
+        { q: "На какую высоту можно поднять груз весом 100 Н, совершив работу 800 Дж?",
+          given: ["P = 100 Н", "A = 800 Дж"], find: "h — ?",
+          steps: ["A = P·h → h = A/P = 800/100 = 8 м."], answer: "h = 8 м." },
+        { q: "Мяч массой 0,5 кг подняли на 2 м и отпустили. Найдите его потенциальную энергию вверху и кинетическую энергию у земли (без сопротивления).",
+          given: ["m = 0,5 кг", "h = 2 м", "g = 10"], find: "E_п, E_к — ?",
+          steps: ["E_п = m·g·h = 0,5 · 10 · 2 = 10 Дж.", "У земли вся энергия становится кинетической: E_к = E_п = 10 Дж."], answer: "E_п = 10 Дж, E_к = 10 Дж." },
+      ],
+    },
+    {
+      id: "intro", title: "🔭 Введение и измерения", sub: "Величины, СИ, погрешность, перевод единиц",
+      problems: [
+        { q: "Цена деления линейки 1 мм. Длина бруска между метками 8,4 см. Запишите результат с погрешностью.",
+          given: ["цена деления = 1 мм", "L = 8,4 см"], find: "запись — ?",
+          steps: ["Погрешность = половина деления = 0,5 мм = 0,05 см.", "Результат: L = (8,40 ± 0,05) см."], answer: "L = (8,40 ± 0,05) см." },
+        { q: "Выразите 72 км/ч в м/с и 15 м/с в км/ч.",
+          given: ["72 км/ч", "15 м/с"], find: "перевод — ?",
+          steps: ["72 / 3,6 = 20 м/с.", "15 · 3,6 = 54 км/ч."], answer: "20 м/с; 54 км/ч." },
+        { q: "Выразите 2,5 т в килограммах, 500 г в килограммах и 0,3 м³ в литрах.",
+          given: ["2,5 т", "500 г", "0,3 м³"], find: "перевод — ?",
+          steps: ["2,5 т = 2500 кг.", "500 г = 0,5 кг.", "0,3 м³ = 300 л."], answer: "2500 кг; 0,5 кг; 300 л." },
+        { q: "Кусок металла массой 0,89 кг имеет объём 100 см³. Определите плотность и угадайте металл.",
+          given: ["m = 0,89 кг = 890 г", "V = 100 см³"], find: "ρ — ?",
+          steps: ["ρ = m/V = 890/100 = 8,9 г/см³.", "Это плотность меди."], answer: "ρ = 8,9 г/см³ — медь." },
+      ],
+    },
+  ],
+};
+
+GAME.examTheory = {
+  grade7: [
+    // Введение
+    { sec: "intro", q: "Что из перечисленного — физическое тело?", opts: ["Железо", "Гвоздь", "Вода", "Скорость"], correct: 1 },
+    { sec: "intro", q: "Что является физическим явлением?", opts: ["Стол", "Таяние льда", "Стакан", "Линейка"], correct: 1 },
+    { sec: "intro", q: "В каких единицах в СИ измеряют массу?", opts: ["в граммах", "в килограммах", "в ньютонах", "в литрах"], correct: 1 },
+    { sec: "intro", q: "Цена деления 2 мм. Чему равна погрешность измерения?", opts: ["2 мм", "1 мм", "0,5 мм", "4 мм"], correct: 1 },
+    { sec: "intro", q: "Главный способ проверить гипотезу в физике —", opts: ["спор", "опыт", "мнение", "голосование"], correct: 1 },
+    // Вещество
+    { sec: "matter", q: "Все вещества состоят из...", opts: ["клеток", "молекул и атомов", "только воды", "пустоты"], correct: 1 },
+    { sec: "matter", q: "Диффузия быстрее всего происходит в...", opts: ["твёрдых телах", "жидкостях", "газах", "металлах"], correct: 2 },
+    { sec: "matter", q: "При нагревании скорость движения молекул...", opts: ["растёт", "падает", "не меняется", "равна нулю"], correct: 0 },
+    { sec: "matter", q: "В каком состоянии вещество сохраняет и форму, и объём?", opts: ["газ", "жидкость", "твёрдое", "пар"], correct: 2 },
+    { sec: "matter", q: "Газ легко сжать, потому что...", opts: ["молекулы большие", "между молекулами большие промежутки", "газ холодный", "в нём нет молекул"], correct: 1 },
+    // Механика
+    { sec: "mechanics", q: "Скорость вычисляют по формуле...", opts: ["υ = S·t", "υ = S/t", "υ = t/S", "υ = S+t"], correct: 1 },
+    { sec: "mechanics", q: "Инерция — это...", opts: ["сохранение скорости без действия сил", "притяжение тел", "изменение массы", "вид трения"], correct: 0 },
+    { sec: "mechanics", q: "Плотность вычисляют по формуле...", opts: ["ρ = V/m", "ρ = m·V", "ρ = m/V", "ρ = m+V"], correct: 2 },
+    { sec: "mechanics", q: "Сила измеряется в...", opts: ["килограммах", "ньютонах", "паскалях", "джоулях"], correct: 1 },
+    { sec: "mechanics", q: "Чтобы перевести км/ч в м/с, нужно...", opts: ["умножить на 3,6", "разделить на 3,6", "умножить на 10", "ничего не делать"], correct: 1 },
+    { sec: "mechanics", q: "Сила тяжести равна...", opts: ["m/g", "m·g", "m+g", "g/m"], correct: 1 },
+    // Давление
+    { sec: "pressure", q: "Давление вычисляют по формуле...", opts: ["p = F·S", "p = S/F", "p = F/S", "p = F+S"], correct: 2 },
+    { sec: "pressure", q: "Закон Паскаля: жидкости и газы передают давление...", opts: ["только вниз", "во все стороны одинаково", "только вверх", "не передают вовсе"], correct: 1 },
+    { sec: "pressure", q: "Выталкивающая сила больше, если...", opts: ["тело меньше", "объём погружённой части больше", "вода холоднее", "тело легче"], correct: 1 },
+    { sec: "pressure", q: "Тело плавает, если его плотность...", opts: ["больше плотности жидкости", "меньше плотности жидкости", "равна нулю", "очень большая"], correct: 1 },
+    { sec: "pressure", q: "С увеличением глубины давление в жидкости...", opts: ["растёт", "падает", "не меняется", "исчезает"], correct: 0 },
+    { sec: "pressure", q: "Атмосферное давление измеряют...", opts: ["термометром", "барометром", "линейкой", "весами"], correct: 1 },
+    // Работа и энергия
+    { sec: "work", q: "Механическая работа равна...", opts: ["A = F/s", "A = F·s", "A = s/F", "A = F+s"], correct: 1 },
+    { sec: "work", q: "Мощность — это...", opts: ["работа", "работа за единицу времени", "сила", "энергия"], correct: 1 },
+    { sec: "work", q: "Золотое правило механики: выигрывая в силе, проигрываем в...", opts: ["массе", "пути", "температуре", "энергии"], correct: 1 },
+    { sec: "work", q: "КПД любого реального механизма...", opts: ["больше 100 %", "равен 100 %", "меньше 100 %", "равен нулю"], correct: 2 },
+    { sec: "work", q: "Потенциальная энергия поднятого тела равна...", opts: ["m·υ²/2", "m·g·h", "F·s", "m/g"], correct: 1 },
+    { sec: "work", q: "Единица работы и энергии —", opts: ["ватт", "ньютон", "джоуль", "паскаль"], correct: 2 },
+    // --- дополнительные вопросы ---
+    { sec: "intro", q: "Какая величина измеряется в секундах?", opts: ["Масса", "Время", "Сила", "Путь"], correct: 1 },
+    { sec: "intro", q: "Что НЕ является единицей длины?", opts: ["метр", "сантиметр", "литр", "километр"], correct: 2 },
+    { sec: "matter", q: "Почему твёрдые тела сохраняют форму?", opts: ["Молекулы упорядочены и крепко связаны", "Молекулы не движутся", "В них нет молекул", "Они холодные"], correct: 0 },
+    { sec: "matter", q: "Какое явление доказывает движение молекул?", opts: ["Диффузия", "Притяжение Земли", "Трение", "Инерция"], correct: 0 },
+    { sec: "mechanics", q: "Какое движение называют равномерным?", opts: ["Скорость постоянна", "Скорость растёт", "Тело стоит", "Скорость убывает"], correct: 0 },
+    { sec: "mechanics", q: "В каких единицах измеряют плотность в СИ?", opts: ["кг/м³", "г/см³", "кг", "Н"], correct: 0 },
+    { sec: "mechanics", q: "Каким прибором измеряют силу?", opts: ["динамометром", "барометром", "термометром", "мензуркой"], correct: 0 },
+    { sec: "mechanics", q: "Масса тела 2 кг. Чему равна сила тяжести (g = 10)?", opts: ["20 Н", "2 Н", "10 Н", "0,2 Н"], correct: 0 },
+    { sec: "pressure", q: "В каких единицах измеряют давление?", opts: ["в паскалях", "в ньютонах", "в джоулях", "в ваттах"], correct: 0 },
+    { sec: "pressure", q: "Как уменьшить давление тела на опору?", opts: ["Увеличить площадь опоры", "Уменьшить площадь", "Увеличить массу", "Заострить опору"], correct: 0 },
+    { sec: "pressure", q: "Кто открыл закон о выталкивающей силе?", opts: ["Архимед", "Ньютон", "Паскаль", "Галилей"], correct: 0 },
+    { sec: "work", q: "В каких единицах измеряют мощность?", opts: ["в ваттах", "в джоулях", "в ньютонах", "в паскалях"], correct: 0 },
+    { sec: "work", q: "Если тело не перемещается, работа силы равна...", opts: ["нулю", "силе", "весу", "мощности"], correct: 0 },
+    { sec: "work", q: "Какой простой механизм даёт выигрыш в силе?", opts: ["Рычаг", "Термометр", "Часы", "Линейка"], correct: 0 },
+    { sec: "work", q: "Энергия движущегося тела называется...", opts: ["кинетической", "потенциальной", "тепловой", "световой"], correct: 0 },
+  ],
+};
+
+if (typeof window !== "undefined") window.GAME = GAME;
+
+</script>
+    <script>
+/* js/story_g8.js */
+/* story_g8.js — главы 8 класса. ШАБЛОН: скопируй блок главы и заполняй своим.
+   Подключается после story.js; главы добавляются в GAME.chapters. */
+(function () {
+  if (typeof window === "undefined" || !window.GAME) return;
+  var G = window.GAME;
+  G.chapters = G.chapters || [];
+
+  var chapters8 = [
+    {
+      id: "g8_intro", grade: 8, status: "open", title: "Тепловые явления — начало", icon: "🔥", topicId: "",
+      scenes: [
+        { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
+          text: "Добро пожаловать в 8 класс! Миры стали горячее: тепло, температура, электричество. Это глава-заготовка — по ней удобно делать остальные." },
+        { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🔬",
+          text: "Температура показывает, насколько тело нагрето: чем быстрее движутся молекулы, тем она выше." },
+        { type: "concept", speaker: "Ньютончик", mood: "happy", emoji: "🔬",
+          text: "Количество теплоты при нагревании: Q = c·m·(t₂ − t₁), где c — удельная теплоёмкость." },
+        { type: "practice", title: "Разогрев", intro: "Пара задач для примера.",
+          items: [
+            { kind: "mc", q: "Что показывает температура тела?", options: ["Насколько тело нагрето", "Массу тела", "Объём тела", "Цвет тела"], correct: 0, solution: "Температура — мера нагретости: быстрее движутся молекулы — выше температура." },
+            { kind: "num", q: "Воду массой 2 кг нагрели на 10 °C. Сколько теплоты ушло? (c = 4200) (Дж)", answer: 84000, unit: "Дж", solution: "Q = c·m·Δt = 4200·2·10 = 84 000 Дж." },
+          ] },
+        { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬", text: "Готов к финалу? Реши задачу — и заготовка пройдена." },
+        { type: "boss", title: "Тепловой расчёт", emoji: "🔥",
+          story: "Сколько теплоты нужно, чтобы нагреть 3 кг воды от 20 °C до 50 °C? (c = 4200)",
+          q: "Количество теплоты (Дж):", answer: 378000, unit: "Дж",
+          hint: "Q = c·m·(t₂ − t₁). Сначала найди разницу температур.",
+          solution: "Δt = 50 − 20 = 30 °C; Q = 4200·3·30 = 378 000 Дж." },
+      ],
+      outro: { title: "Глава-заготовка пройдена!", sub: "Скопируй этот блок, поменяй тему — получится новая глава 8 класса." },
+    },
+  ];
+  chapters8.forEach(function (c) { G.chapters.push(c); });
+})();
+
+</script>
+    <script>
+/* js/story_g9.js */
+/* story_g9.js — главы 9 класса. ШАБЛОН. Подключается после story.js. */
+(function () {
+  if (typeof window === "undefined" || !window.GAME) return;
+  var G = window.GAME;
+  G.chapters = G.chapters || [];
+
+  var chapters9 = [
+    {
+      id: "g9_intro", grade: 9, status: "open", title: "Второй закон Ньютона", icon: "🚀", topicId: "",
+      scenes: [
+        { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
+          text: "9 класс — высшая лига механики! Теперь сила и ускорение связаны напрямую. Это глава-заготовка." },
+        { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🔬",
+          text: "Чем больше сила и чем легче тело, тем больше ускорение." },
+        { type: "concept", speaker: "Ньютончик", mood: "happy", emoji: "🔬",
+          text: "Второй закон Ньютона: a = F / m, или F = m·a." },
+        { type: "practice", title: "Разгон", intro: "Пара задач для примера.",
+          items: [
+            { kind: "num", q: "Сила 20 Н действует на тело массой 4 кг. Найди ускорение. (м/с²)", answer: 5, unit: "м/с²", solution: "a = F/m = 20/4 = 5 м/с²." },
+            { kind: "mc", q: "Если силу увеличить вдвое (масса та же), ускорение...", options: ["увеличится вдвое", "уменьшится вдвое", "не изменится", "станет нулём"], correct: 0, solution: "a = F/m: при росте силы вдвое ускорение тоже растёт вдвое." },
+          ] },
+        { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬", text: "Финальный разгон — вперёд!" },
+        { type: "boss", title: "Расчёт силы", emoji: "🚀",
+          story: "Какая сила разгонит тело массой 6 кг с ускорением 3 м/с²?",
+          q: "Сила (Н):", answer: 18, unit: "Н",
+          hint: "F = m·a.",
+          solution: "F = m·a = 6·3 = 18 Н." },
+      ],
+      outro: { title: "Глава-заготовка пройдена!", sub: "Скопируй блок и заполняй главы 9 класса." },
+    },
+  ];
+  chapters9.forEach(function (c) { G.chapters.push(c); });
+})();
+
+</script>
+    <script>
+/* js/problems_g8.js */
+/* problems_g8.js — комплексные задачи и теория экзамена 8 класса. ШАБЛОН. */
+(function () {
+  if (typeof window === "undefined" || !window.GAME) return;
+  var G = window.GAME; G.problems = G.problems || {}; G.examTheory = G.examTheory || {};
+
+  G.problems.grade8 = [
+    { id: "thermal", title: "🔥 Тепловые явления", sub: "Заготовка набора",
+      problems: [
+        { q: "Воду массой 2 кг нагрели от 20 °C до 70 °C. Сколько теплоты потребовалось? (c = 4200 Дж/(кг·°C))",
+          given: ["m = 2 кг", "t₁ = 20 °C", "t₂ = 70 °C", "c = 4200"], find: "Q — ?",
+          steps: ["Δt = 70 − 20 = 50 °C.", "Q = c·m·Δt = 4200·2·50 = 420 000 Дж."], answer: "Q = 420 кДж." },
+      ] },
+  ];
+
+  G.examTheory.grade8 = [
+    { sec: "thermal", q: "Что измеряют термометром?", opts: ["Температуру", "Массу", "Силу", "Объём"], correct: 0 },
+    { sec: "thermal", q: "Единица количества теплоты —", opts: ["джоуль", "ватт", "ньютон", "паскаль"], correct: 0 },
+  ];
+})();
+
+</script>
+    <script>
+/* js/problems_g9.js */
+/* problems_g9.js — комплексные задачи и теория экзамена 9 класса. ШАБЛОН. */
+(function () {
+  if (typeof window === "undefined" || !window.GAME) return;
+  var G = window.GAME; G.problems = G.problems || {}; G.examTheory = G.examTheory || {};
+
+  G.problems.grade9 = [
+    { id: "dynamics", title: "🚀 Динамика", sub: "Заготовка набора",
+      problems: [
+        { q: "На тело массой 5 кг действует сила 30 Н. Найди ускорение и путь за 4 с (из покоя).",
+          given: ["m = 5 кг", "F = 30 Н", "t = 4 с", "υ₀ = 0"], find: "a, s — ?",
+          steps: ["a = F/m = 30/5 = 6 м/с².", "s = a·t²/2 = 6·16/2 = 48 м."], answer: "a = 6 м/с², s = 48 м." },
+      ] },
+  ];
+
+  G.examTheory.grade9 = [
+    { sec: "dynamics", q: "Второй закон Ньютона —", opts: ["a = F/m", "F = m/a", "a = m·F", "F = a/m"], correct: 0 },
+    { sec: "dynamics", q: "Если масса больше, а сила та же, ускорение...", opts: ["меньше", "больше", "не меняется", "нулевое"], correct: 0 },
+  ];
+})();
+
+</script>
+    <script>
+/* js/content_g7_plus.js */
+/* content_g7_plus.js — Задача 1: дополнение 7 класса.
+   1) Новая глава «Сила трения» (теория + практика + босс);
+   2) +5 комплексных задач (комбинируют темы);
+   3) +10 вопросов экзамена (трение, работа/мощность, рычаг, давление).
+   Подключать после story.js и problems.js. Ничего не ломает — только добавляет. */
+(function () {
+  if (typeof window === "undefined" || !window.GAME) return;
+  var G = window.GAME;
+  G.chapters = G.chapters || [];
+  G.problems = G.problems || {}; G.problems.grade7 = G.problems.grade7 || [];
+  G.examTheory = G.examTheory || {}; G.examTheory.grade7 = G.examTheory.grade7 || [];
+
+  /* ---------- 1) Глава «Сила трения» ---------- */
+  G.chapters.push({
+    id: "friction_chapter", grade: 7, status: "open", title: "Сила трения", icon: "🧲", topicId: "",
+    scenes: [
+      { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬",
+        text: "Новый мир — Мир трения! Здесь предметы то прилипают намертво, то скользят без остановки. Пора укротить силу трения." },
+      { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🔬",
+        text: "Трение бывает трёх видов: покоя (удерживает тело на месте), скольжения (когда тело скользит) и качения (когда катится). Качение — обычно самое слабое." },
+      { type: "concept", speaker: "Ньютончик", mood: "happy", emoji: "🔬",
+        text: "Сила трения скольжения: Fтр = μ·N, где N — сила нормального давления (на горизонтали N равна весу тела), μ — коэффициент трения. Трение зависит от шероховатости и силы прижатия, но не от площади." },
+      { type: "line", speaker: "Ньютончик", mood: "explain", emoji: "🔬",
+        text: "Трение уменьшают смазкой, роликами и подшипниками, а увеличивают протектором, песком или шероховатой поверхностью." },
+      { type: "practice", title: "Укрощение трения", intro: "Пять вопросов и пять задач, чтобы освоить трение.",
+        items: [
+          { kind: "mc", q: "Какой вид трения мешает сдвинуть тяжёлый шкаф с места?", options: ["Трение покоя", "Трение скольжения", "Трение качения", "Трения нет"], correct: 0, solution: "Пока шкаф не двигается, его удерживает трение покоя." },
+          { kind: "mc", q: "Что уменьшает трение?", options: ["Смазка", "Песок", "Шероховатость", "Увеличение веса"], correct: 0, solution: "Смазка разделяет поверхности и уменьшает трение." },
+          { kind: "mc", q: "Трение качения по сравнению с трением скольжения обычно...", options: ["меньше", "больше", "такое же", "отсутствует"], correct: 0, solution: "Катить легче, чем тащить: трение качения меньше." },
+          { kind: "mc", q: "От чего зависит сила трения скольжения?", options: ["От силы прижатия и шероховатости", "От площади опоры", "От цвета тела", "От объёма тела"], correct: 0, solution: "Чем сильнее прижатие и грубее поверхности, тем больше трение; от площади не зависит." },
+          { kind: "mc", q: "Зачем шинам нужен протектор?", options: ["Увеличить трение с дорогой", "Уменьшить трение", "Для красоты", "Снизить вес"], correct: 0, solution: "Протектор увеличивает сцепление (трение) колеса с дорогой." },
+          { kind: "num", q: "Брусок тянут равномерно силой 8 Н. Чему равна сила трения? (Н)", answer: 8, unit: "Н", solution: "При равномерном движении сила трения равна силе тяги: 8 Н." },
+          { kind: "num", q: "Коэффициент трения 0,3, сила нормального давления 200 Н. Найди силу трения. (Н)", answer: 60, unit: "Н", solution: "Fтр = μ·N = 0,3·200 = 60 Н." },
+          { kind: "num", q: "Тело весит 50 Н, лежит на горизонтали, μ = 0,2. Найди силу трения скольжения. (Н)", answer: 10, unit: "Н", solution: "N = 50 Н; Fтр = μ·N = 0,2·50 = 10 Н." },
+          { kind: "num", q: "Сила трения 15 Н, путь 4 м. Найди работу силы трения по модулю. (Дж)", answer: 60, unit: "Дж", solution: "A = F·s = 15·4 = 60 Дж." },
+          { kind: "num", q: "Тело массой 4 кг (g = 10), μ = 0,25. Найди силу трения. (Н)", answer: 10, unit: "Н", solution: "N = m·g = 40 Н; Fтр = 0,25·40 = 10 Н." },
+        ] },
+      { type: "line", speaker: "Ньютончик", mood: "happy", emoji: "🧑‍🔬", text: "Финальный рывок — рассчитай силу, чтобы сдвинуть ящик!" },
+      { type: "boss", title: "Тяжёлый ящик", emoji: "🧲",
+        story: "Ящик массой 20 кг тянут равномерно по полу. Коэффициент трения 0,3. Какую силу нужно прикладывать? Сначала найди силу нормального давления (вес).",
+        q: "Сила тяги (Н):", answer: 60, unit: "Н",
+        hint: "Сначала N = m·g. Потом Fтр = μ·N. При равномерном движении сила тяги равна силе трения.",
+        solution: "N = 20·10 = 200 Н; Fтр = 0,3·200 = 60 Н; при равномерном движении сила тяги = 60 Н." },
+    ],
+    outro: { title: "Мир трения укрощён!", sub: "Ты понял, как работает трение, и собрал ещё одну Часть для Источника Знаний." },
+  });
+
+  /* ---------- 2) +5 комплексных задач ---------- */
+  G.problems.grade7.push({
+    id: "extra", title: "🆕 Новые темы и комбинации", sub: "Трение, работа, рычаг, давление — вместе",
+    problems: [
+      { q: "Тело массой 10 кг тянут равномерно по полу. Коэффициент трения 0,4 (g = 10). Найдите силу трения и работу при перемещении на 5 м.",
+        given: ["m = 10 кг", "μ = 0,4", "s = 5 м", "g = 10"], find: "Fтр, A — ?",
+        steps: ["N = m·g = 10·10 = 100 Н.", "Fтр = μ·N = 0,4·100 = 40 Н.", "A = Fтр·s = 40·5 = 200 Дж."], answer: "Fтр = 40 Н, A = 200 Дж." },
+      { q: "На коротком плече рычага 0,3 м висит груз массой 40 кг, длинное плечо 1,2 м. Какую силу приложить к длинному плечу? Сначала найдите вес груза.",
+        given: ["l₁ = 0,3 м", "m = 40 кг", "l₂ = 1,2 м", "g = 10"], find: "F — ?",
+        steps: ["Вес: P = m·g = 40·10 = 400 Н.", "Правило рычага: F = P·l₁/l₂ = 400·0,3/1,2 = 100 Н."], answer: "F = 100 Н." },
+      { q: "Бак с водой высотой 2 м имеет площадь дна 0,5 м². Найдите давление воды на дно и силу давления на дно.",
+        given: ["h = 2 м", "S = 0,5 м²", "ρ = 1000", "g = 10"], find: "p, F — ?",
+        steps: ["p = ρ·g·h = 1000·10·2 = 20 000 Па.", "F = p·S = 20 000·0,5 = 10 000 Н."], answer: "p = 20 кПа, F = 10 кН." },
+      { q: "Двигатель за 10 с поднимает груз массой 50 кг на высоту 4 м. КПД 80 %. Найдите полезную и затраченную работу и полезную мощность.",
+        given: ["m = 50 кг", "h = 4 м", "t = 10 с", "КПД = 80 %", "g = 10"], find: "A_п, A_з, N — ?",
+        steps: ["A_п = m·g·h = 50·10·4 = 2000 Дж.", "A_з = A_п/КПД = 2000/0,8 = 2500 Дж.", "N = A_п/t = 2000/10 = 200 Вт."], answer: "A_п = 2000 Дж, A_з = 2500 Дж, N = 200 Вт." },
+      { q: "Санки тянут равномерно по снегу силой 25 Н. Коэффициент трения 0,2. Найдите силу трения и вес санок (силу нормального давления).",
+        given: ["F = 25 Н (равномерно)", "μ = 0,2"], find: "Fтр, N — ?",
+        steps: ["При равномерном движении Fтр = F = 25 Н.", "Из Fтр = μ·N: N = Fтр/μ = 25/0,2 = 125 Н."], answer: "Fтр = 25 Н, N = 125 Н." },
+    ],
+  });
+
+  /* ---------- 3) +10 вопросов экзамена ---------- */
+  G.examTheory.grade7.push(
+    { sec: "mechanics", q: "Сила трения скольжения вычисляется по формуле...", opts: ["Fтр = μ·N", "Fтр = N/μ", "Fтр = μ + N", "Fтр = μ/N"], correct: 0 },
+    { sec: "mechanics", q: "Какой вид трения удерживает гвоздь в доске?", opts: ["трение покоя", "трение скольжения", "трение качения", "трения нет"], correct: 0 },
+    { sec: "mechanics", q: "Чтобы уменьшить трение, поверхности...", opts: ["смазывают", "посыпают песком", "делают шершавее", "нагревают"], correct: 0 },
+    { sec: "mechanics", q: "Трение качения по сравнению с трением скольжения обычно...", opts: ["меньше", "больше", "равно", "отсутствует"], correct: 0 },
+    { sec: "work", q: "Мощность вычисляют по формуле...", opts: ["N = A/t", "N = A·t", "N = t/A", "N = F·t"], correct: 0 },
+    { sec: "work", q: "КПД механизма показывает...", opts: ["какая часть работы полезна", "полную работу", "мощность", "силу"], correct: 0 },
+    { sec: "work", q: "Условие равновесия рычага (правило моментов):", opts: ["F₁·l₁ = F₂·l₂", "F₁ + l₁ = F₂ + l₂", "F₁/l₁ = F₂/l₂", "F₁·F₂ = l₁·l₂"], correct: 0 },
+    { sec: "work", q: "Момент силы — это...", opts: ["произведение силы на плечо", "сила минус плечо", "сила делить на плечо", "сумма сил"], correct: 0 },
+    { sec: "pressure", q: "Закон Паскаля: давление в жидкости передаётся...", opts: ["одинаково во все стороны", "только вниз", "только вверх", "не передаётся"], correct: 0 },
+    { sec: "pressure", q: "В гидравлическом прессе выигрыш в силе тем больше, чем...", opts: ["больше площадь большого поршня", "меньше площадь большого поршня", "больше жидкости", "выше температура"], correct: 0 }
+  );
+})();
+
+</script>
+    <script>
+/* js/art.js */
 /* ============================================================
    ФизМат RPG — art.js
    Иллюстрации к миссиям курса. Чистый инлайн-SVG, без внешних
@@ -4753,7 +5902,9 @@ if (typeof window !== "undefined") window.GAME = GAME;
   if (typeof window !== "undefined") window.MISSION_ART = window.MISSION_ART;
 })();
 
-/* ===== js/trainer.js ===== */
+</script>
+    <script>
+/* js/trainer.js */
 /* ============================================================
    ФизМат RPG — trainer.js
    Генераторы задач для тренажёра по темам.
@@ -4818,12 +5969,12 @@ if (typeof window !== "undefined") window.GAME = GAME;
     return { q: `Под действием силы ${F} Н тело массой ${m} кг приходит в движение. Найди ускорение.`, a: a, u: "м/с²", sol: `a = F/m = ${F}/${m} = ${a} м/с².` };
   };
 
-  /* Вес тела (P = m·g; перегрузка P = m(g+a)) */
+  /* Вес тела (P = m·g на разных телах) */
   T.weight = (L) => {
     if (L === 1) { const m = ri(2, 20), P = m * 10; return { q: `Найди вес тела массой ${m} кг на неподвижной опоре (g = 10).`, a: P, u: "Н", sol: `P = m·g = ${m}·10 = ${P} Н.` }; }
     if (L === 2) { const m = ri(2, 15), P = m * 10; return { q: `Вес тела на неподвижной опоре ${P} Н. Найди его массу (g = 10).`, a: m, u: "кг", sol: `m = P/g = ${P}/10 = ${m} кг.` }; }
-    const m = ri(2, 10), a = ri(1, 5), P = m * (10 + a);
-    return { q: `Лифт разгоняется вверх с ускорением ${a} м/с². Найди вес тела массой ${m} кг (g = 10).`, a: P, u: "Н", sol: `P = m·(g + a) = ${m}·(10 + ${a}) = ${P} Н.` };
+    const bodies = [["Луне", 1.6], ["Марсе", 3.7], ["Юпитере", 25]]; const b = bodies[ri(0, 2)]; const m = ri(2, 12); const P = Math.round(m * b[1] * 10) / 10;
+    return { q: `На ${b[0]} (g = ${String(b[1]).replace(".", ",")} Н/кг) тело массой ${m} кг. Найди его вес.`, a: P, u: "Н", tol: 0.05, sol: `P = m·g = ${m}·${String(b[1]).replace(".", ",")} = ${String(P).replace(".", ",")} Н.` };
   };
 
   /* Давление твёрдого тела (p = F/S) */
@@ -4926,7 +6077,9 @@ if (typeof window !== "undefined") window.GAME = GAME;
   window.TRAINER_LEVELS = ["Разминка", "Уверенно", "Вызов"];
 })();
 
-/* ===== js/app.js ===== */
+</script>
+  <script>
+/* js/app.js */
 /* ============================================================
    ФизМат RPG — app.js
    Слой интерфейса (SPA). Рисует все экраны в #app и связывает
@@ -5004,15 +6157,50 @@ if (typeof window !== "undefined") window.GAME = GAME;
       const g = actx.createGain();
       o.connect(g); g.connect(actx.destination);
       const now = actx.currentTime;
+      o.type = (type === "flip" || type === "nav") ? "triangle" : "sine";
       if (type === "correct") { o.frequency.setValueAtTime(660, now); o.frequency.exponentialRampToValueAtTime(990, now + 0.12); }
       else if (type === "wrong") { o.frequency.setValueAtTime(300, now); o.frequency.exponentialRampToValueAtTime(160, now + 0.18); }
       else if (type === "win") { o.frequency.setValueAtTime(523, now); o.frequency.setValueAtTime(784, now + 0.12); o.frequency.setValueAtTime(1046, now + 0.24); }
+      else if (type === "achieve") { o.frequency.setValueAtTime(660, now); o.frequency.setValueAtTime(880, now + 0.1); o.frequency.setValueAtTime(1175, now + 0.2); }
+      else if (type === "flip") { o.frequency.setValueAtTime(520, now); o.frequency.exponentialRampToValueAtTime(720, now + 0.06); }
+      else if (type === "nav") { o.frequency.setValueAtTime(360, now); o.frequency.exponentialRampToValueAtTime(300, now + 0.08); }
+      const longS = (type === "win" || type === "achieve"), shortS = (type === "flip" || type === "nav");
+      const peak = shortS ? 0.07 : 0.16, dur = longS ? 0.4 : (shortS ? 0.1 : 0.25);
       g.gain.setValueAtTime(0.0001, now);
-      g.gain.exponentialRampToValueAtTime(0.16, now + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + (type === "win" ? 0.4 : 0.25));
-      o.start(now); o.stop(now + (type === "win" ? 0.42 : 0.28));
+      g.gain.exponentialRampToValueAtTime(peak, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      o.start(now); o.stop(now + dur + 0.03);
     } catch (e) { /* звук не критичен */ }
   }
+
+  /* ---------- фоновая музыка (Web Audio, мягкая пентатоника) ---------- */
+  const Music = {
+    ctx: null, master: null, timer: null, step: 0, playing: false,
+    seq: [392.00, 523.25, 659.25, 587.33, 523.25, 440.00, 392.00, 0, 440.00, 523.25, 587.33, 659.25, 523.25, 392.00, 329.63, 0],
+    start() {
+      if (this.playing) return;
+      try {
+        this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === "suspended") this.ctx.resume();
+        this.master = this.ctx.createGain(); this.master.gain.value = 0.05; this.master.connect(this.ctx.destination);
+        this.playing = true; this.step = 0;
+        const loop = () => { if (!this.playing) return; this.note(this.seq[this.step % this.seq.length]); this.step++; this.timer = setTimeout(loop, 520); };
+        loop();
+      } catch (e) { /* музыка не критична */ }
+    },
+    note(freq) {
+      if (!freq || !this.ctx) return;
+      const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+      o.type = "triangle"; o.frequency.value = freq; o.connect(g); g.connect(this.master);
+      const now = this.ctx.currentTime;
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.6, now + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+      o.start(now); o.stop(now + 0.55);
+    },
+    stop() { this.playing = false; if (this.timer) { clearTimeout(this.timer); this.timer = null; } },
+  };
+  function startMusicIfEnabled() { if (State.data.settings.music && !Music.playing) Music.start(); }
 
   /* ---------- тосты ---------- */
   function toastBox() {
@@ -5100,6 +6288,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
         enqueueCelebrate({ emoji: "🎚️", title: `Уровень ${e.payload.level}!`, sub: e.payload.title, mentor: pick(GAME.mentor.lines.levelUp) });
         tone("win");
       } else if (e.type === "achievement") {
+        tone("achieve");
         toast({ ico: e.payload.icon, strong: "Достижение получено!", sub: e.payload.title, cls: "gold", ttl: 3600 });
       } else if (e.type === "topicComplete") {
         const r = e.payload.reward || {};
@@ -5133,21 +6322,29 @@ if (typeof window !== "undefined") window.GAME = GAME;
      ============================================================ */
   // Конфетти при завершении (лёгкие DOM-частицы)
   function confetti(n) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     n = n || 30;
     const layer = document.createElement("div"); layer.className = "confetti-layer"; layer.setAttribute("aria-hidden", "true");
     const colors = ["#38e1ff", "#7ee787", "#ffd166", "#ff7ad9", "#a06bff", "#ffb84d"];
+    const stars = ["⭐", "✨", "💫", "🌟"];
     for (let i = 0; i < n; i++) {
       const b = document.createElement("i"); b.className = "confetti-bit";
       b.style.left = (Math.random() * 100) + "%";
-      b.style.background = colors[i % colors.length];
       b.style.animationDelay = (Math.random() * 0.4) + "s";
       b.style.animationDuration = (1.5 + Math.random() * 1.3) + "s";
-      b.style.width = (6 + Math.random() * 6) + "px";
-      b.style.height = (10 + Math.random() * 8) + "px";
+      b.style.setProperty("--spin", (Math.random() * 900 - 450) + "deg");
+      const r = Math.random();
+      if (r < 0.16) { b.classList.add("emoji"); b.textContent = stars[i % stars.length]; }
+      else {
+        b.style.background = colors[i % colors.length];
+        const w = 6 + Math.random() * 7;
+        if (r < 0.55) { b.classList.add("round"); b.style.width = w + "px"; b.style.height = w + "px"; }
+        else { b.style.width = w + "px"; b.style.height = (10 + Math.random() * 9) + "px"; }
+      }
       layer.appendChild(b);
     }
     document.body.appendChild(layer);
-    setTimeout(() => layer.remove(), 3400);
+    setTimeout(() => layer.remove(), 3600);
   }
   // Всплывающее «+N XP» у HUD
   function floatXP(n) {
@@ -5192,7 +6389,9 @@ if (typeof window !== "undefined") window.GAME = GAME;
         <div class="hud-stats">
           <span class="hud-chip coins" title="Монеты"><span class="ico">🪙</span>${hero.coins}</span>
           <span class="hud-chip studied" title="Изучено тем"><span class="ico">📚</span>${State.topicsStudied()}/${State.totalTopics()}</span>
-          <button class="hud-sound" data-act="toggle-sound" title="Звук">${State.data.settings.sound ? "🔊" : "🔇"}</button>
+          <span class="hud-chip quests" title="Квесты сегодня"><span class="ico">🏆</span>${State.questDoneCount()}/${((typeof window!=="undefined"&&window.QUEST_DEFS)||[]).length}</span>
+          <button class="hud-sound" data-act="toggle-sound" title="Звуки">${State.data.settings.sound ? "🔊" : "🔇"}</button>
+          <button class="hud-sound" data-act="toggle-music" title="Музыка">${State.data.settings.music ? "🎵" : "🔕"}</button>
         </div>
       </header>`;
   }
@@ -5211,8 +6410,76 @@ if (typeof window !== "undefined") window.GAME = GAME;
     if (newFill && targetW != null) requestAnimationFrame(() => { newFill.style.width = targetW; }); // плавная доводка
   }
 
+  // Прогресс ежедневных квестов: засчитать действие и показать награду
+  function bumpQuest(metric, n) {
+    if (!State.data.hero) return;
+    const done = State.questBump(metric, n || 1);
+    if (done && done.length) {
+      done.forEach((q) => toast({ ico: q.icon || "🏆", strong: "Квест выполнен: " + q.label, sub: "+" + q.xp + " XP · +" + q.coins + " 🪙", cls: "green", ttl: 2800 }));
+      updateHUD(); tone("win"); confetti(28);
+    }
+  }
+
+  // Экспорт сохранения в JSON-файл (скачивается)
+  function doExport() {
+    try {
+      const blob = new Blob([State.exportData()], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const d = new Date();
+      a.href = url;
+      a.download = "fizmat-save-" + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + ".json";
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (_) {} }, 150);
+      toast({ ico: "💾", strong: "Сохранение скачано", sub: a.download, cls: "green", ttl: 2800 });
+    } catch (e) { toast({ ico: "⚠️", strong: "Не удалось экспортировать", ttl: 2600 }); }
+  }
+  // Импорт сохранения из JSON-файла (с подтверждением и проверкой)
+  function doImport() {
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "application/json,.json";
+    inp.addEventListener("change", () => {
+      const file = inp.files && inp.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        let parsed;
+        try { parsed = JSON.parse(reader.result); }
+        catch (e) { toast({ ico: "⚠️", strong: "Файл повреждён", sub: "Это не похоже на сохранение игры", ttl: 3200 }); return; }
+        if (!window.confirm("Импорт ЗАМЕНИТ текущий прогресс на загруженный. Отменить будет нельзя. Продолжить?")) return;
+        if (State.importData(parsed)) {
+          toast({ ico: "✅", strong: "Прогресс загружен!", cls: "green", ttl: 1800 });
+          setTimeout(() => { try { location.reload(); } catch (_) { render(); } }, 600);
+        } else {
+          toast({ ico: "⚠️", strong: "Неверный файл сохранения", sub: "Не найдены нужные данные игры", ttl: 3200 });
+        }
+      };
+      reader.readAsText(file);
+    });
+    inp.click();
+  }
+
+  // Блок ежедневных квестов (на главном экране класса)
+  function questsBlockHTML() {
+    const list = State.questProgress();
+    if (!list.length) return "";
+    const doneN = list.filter((x) => x.done).length;
+    const rows = list.map(({ q, val, done }) =>
+      `<div class="quest-row ${done ? "done" : ""}">
+         <span class="quest-ico">${done ? "✅" : q.icon}</span>
+         <span class="quest-main"><span class="quest-label">${esc(q.label)}</span>
+           <span class="quest-bar"><span class="quest-bar-fill" style="width:${Math.round(val / q.target * 100)}%"></span></span></span>
+         <span class="quest-rew">${done ? "готово" : val + "/" + q.target}</span>
+       </div>`).join("");
+    return `<div class="quests-block">
+        <div class="quests-head"><span>🗓️ Ежедневные квесты</span><span class="quests-count">${doneN}/${list.length}</span></div>
+        ${rows}
+        ${doneN === list.length ? `<div class="quests-alldone">🎉 Все квесты на сегодня выполнены — возвращайся завтра!</div>` : ""}
+      </div>`;
+  }
+
   function tabsHTML() {
-    const gradeViews = ["grade", "worlds", "chapters", "practice", "realm", "course", "course-mission", "trainer", "scene", "adventure", "topic", "world", "map"];
+    const gradeViews = ["grade", "worlds", "chapters", "practice", "problems", "exam", "realm", "course", "course-mission", "trainer", "scene", "adventure", "topic", "world", "map"];
     const inGrade = gradeViews.indexOf(ui.view) >= 0;
     const g = (n, ico) => `<button class="tab ${inGrade && ui.gradeSel === n ? "active" : ""}" data-act="open-grade" data-grade="${n}">
          <span class="ico">${ico}</span><span>${n} класс</span></button>`;
@@ -5564,20 +6831,23 @@ if (typeof window !== "undefined") window.GAME = GAME;
       { id: "hero", label: "Мой герой" },
       { id: "knowledge", label: "Мои знания" },
       { id: "discoveries", label: "Открытия" },
+      { id: "formulas", label: "Формулы" },
       { id: "missions", label: "Задания" },
       { id: "collection", label: "Коллекция" },
-      { id: "teacher", label: "Учителю" },
     ];
+    if (typeof window !== "undefined" && window.FIZMAT_CONFIG && window.FIZMAT_CONFIG.teacherMode) subtabs.push({ id: "teacher", label: "Учителю" });
     const tabs = `<div class="subtabs">${subtabs.map((s) =>
       `<button class="subtab ${ui.cab === s.id ? "active" : ""}" data-act="cab" data-tab="${s.id}">${s.label}</button>`).join("")}</div>`;
 
     let body = "";
+    if (ui.cab === "teacher" && !(window.FIZMAT_CONFIG && window.FIZMAT_CONFIG.teacherMode)) ui.cab = "hero";
     if (ui.cab === "hero") body = cabHero();
     else if (ui.cab === "knowledge") body = cabKnowledge();
     else if (ui.cab === "discoveries") body = cabDiscoveries();
+    else if (ui.cab === "formulas") body = cabFormulas();
     else if (ui.cab === "missions") body = cabMissions();
     else if (ui.cab === "collection") body = cabCollection();
-    else if (ui.cab === "teacher") body = viewTeacher();
+    else if (ui.cab === "teacher") body = State.data.settings.teacherUnlocked ? viewTeacher() : cabTeacherLock();
     else { ui.cab = "hero"; body = cabHero(); }
 
     const head = ui.cab === "teacher" ? "" : `<div class="screen-head"><h2>🔬 Лаборатория исследователя</h2></div>`;
@@ -5613,6 +6883,21 @@ if (typeof window !== "undefined") window.GAME = GAME;
       <div class="disc-grid">${cards}</div>`;
   }
 
+  /* Справочник формул — шпаргалка по курсу, доступна всегда */
+  function cabFormulas() {
+    const groups = (GAME.formulas && (GAME.formulas["grade" + ui.gradeSel] || GAME.formulas.grade7)) || [];
+    const body = groups.map((g) => {
+      const cards = g.items.map((it) =>
+        `<div class="fcard">
+           <div class="fcard-top"><span class="fcard-name">${esc(it.name)}</span><button class="fcard-copy" data-act="formula-copy" data-f="${esc(it.f)}" title="Копировать">📋</button></div>
+           <div class="fcard-f">${esc(it.f)}</div>
+           ${it.note ? `<div class="fcard-note">${esc(it.note)}</div>` : ""}
+         </div>`).join("");
+      return `<div class="fgroup"><div class="fgroup-h">${esc(g.group)}</div><div class="fgrid">${cards}</div></div>`;
+    }).join("");
+    return `<div class="fintro">📐 Шпаргалка по всем формулам курса — доступна всегда, даже если тема ещё не пройдена. Нажми 📋, чтобы скопировать.</div>${body}`;
+  }
+
   /* Программа по классам — всё в одном месте: главы-истории и темы-практика по классам.
      Сюда же будем добавлять теорию из учебников 7–8–9. */
   function cabProgram() {
@@ -5623,7 +6908,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
     ];
     const chItem = (c) => {
       const done = State.isChapterDone(c.id);
-      const lock = (c.status !== "open") || (c.requires && !State.isChapterDone(c.requires));
+      const lock = false; // все главы открыты
       const tag = done ? "✓ пройдена" : (lock ? "🔒 история" : "история");
       const actAttr = lock ? `data-act="go" data-view="adventure"` : `data-act="adv-start" data-ch="${c.id}"`;
       return `<button class="prog-item ch" ${actAttr}>${c.icon} ${esc(c.title)} <span class="prog-tag">${tag}</span></button>`;
@@ -5878,6 +7163,12 @@ if (typeof window !== "undefined") window.GAME = GAME;
     const hasCourse = g === 7 && GAME.course && GAME.course.grade7;
     const courseDone = flat.filter((m) => State.isMissionDone(m.key)).length;
     const trainCount = Object.keys((typeof window !== "undefined" && window.TRAINER_MAP) || {}).length;
+    const probSets = (GAME.problems && GAME.problems["grade" + g]) || [];
+    const probCount = probSets.reduce((a, s) => a + s.problems.length, 0);
+    const examQs = (GAME.examTheory && GAME.examTheory["grade" + g]) || [];
+    const line = newtonHubLine();
+    const allCh = (GAME.chapters || []).filter((c) => c.status === "open");
+    const src = allCh.length ? Math.round(allCh.filter((c) => State.isChapterDone(c.id)).length / allCh.length * 100) : 0;
 
     const card = (attrs, cls, ico, name, desc, badge) =>
       `<button class="menu-card ${cls}" ${attrs}>
@@ -5894,6 +7185,8 @@ if (typeof window !== "undefined") window.GAME = GAME;
     }
     if (chs.length) cards += card(`data-act="open-chapters"`, "mc-story", "🎬", "Сюжет", "Главы-приключения с боссами", `${chs.length} глав`);
     if (hasCourse) cards += card(`data-act="open-practice"`, "mc-train", "🎯", "Тренажёр", "Задачи разных видов, растут по сложности", `${trainCount} тем`);
+    if (probSets.length) cards += card(`data-act="open-problems"`, "mc-combo", "🧩", "Комплексные задачи", "Сложные задачи сразу на несколько тем", `${probCount} задач`);
+    if (examQs.length) cards += card(`data-act="open-exam"`, "mc-exam", "📝", "Экзамен", "Случайные задачи на очки и время", "режим");
     cards += card(`data-act="go" data-view="cabinet"`, "mc-lab", "🔬", "Лаборатория", "Герой, открытия, достижения", "");
 
     let note = "";
@@ -5901,7 +7194,15 @@ if (typeof window !== "undefined") window.GAME = GAME;
 
     return `
       ${fxDots(14)}
-      <div class="gh-hero"><span class="gh-hero-ico">📚</span><div><div class="gh-hero-title">${esc(title)}</div><div class="gh-hero-sub">Выбери раздел</div></div></div>
+      <div class="hq">
+        <div class="hq-newton">${newton(line.mood)}</div>
+        <div class="hq-body">
+          <div class="hq-title">${esc(title)} · штаб</div>
+          <div class="hq-line"><b>${esc(GAME.mentor.name)}:</b> ${esc(line.text)}</div>
+          <div class="hq-src"><span class="hq-src-t">🏆 Источник восстановлен</span><div class="hq-bar"><div class="hq-bar-fill" style="width:${src}%"></div></div><b>${src}%</b></div>
+        </div>
+      </div>
+      ${questsBlockHTML()}
       <div class="menu-grid">${cards}</div>
       ${note}`;
   }
@@ -5927,7 +7228,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
     const chs = (GAME.chapters || []).filter((c) => c.grade === g);
     const chItem = (c) => {
       const done = State.isChapterDone(c.id);
-      const lock = (c.status !== "open") || (c.requires && !State.isChapterDone(c.requires));
+      const lock = false; // все главы открыты
       const tag = done ? "✓ пройдена" : (lock ? "🔒 закрыта" : "▶ играть");
       const attrs = lock ? `data-act="ch-locked"` : `data-act="adv-start" data-ch="${c.id}"`;
       return `<button class="prog-item ch ${lock ? "locked" : ""} ${done ? "done" : ""}" ${attrs}>${c.icon || "📖"} ${esc(c.title)} <span class="prog-tag">${tag}</span></button>`;
@@ -5955,6 +7256,155 @@ if (typeof window !== "undefined") window.GAME = GAME;
       ${items}`;
   }
 
+  // Экран «Комплексные задачи»
+  function viewProblems() {
+    const sets = (GAME.problems && GAME.problems["grade" + ui.gradeSel]) || [];
+    const blocks = sets.map((set) => {
+      const probs = set.problems.map((p, i) => {
+        const given = (p.given || []).join("; ");
+        const steps = (p.steps || []).map((x) => `<div class="prob-step">${esc(x)}</div>`).join("");
+        return `<div class="prob">
+            <div class="prob-q"><span class="prob-n">${i + 1}</span>${esc(p.q)}</div>
+            <details class="prob-sol"><summary>Дано · Решение · Ответ</summary>
+              <div class="prob-block"><b>Дано:</b> ${esc(given)}</div>
+              ${p.find ? `<div class="prob-block"><b>Найти:</b> ${esc(p.find)}</div>` : ""}
+              <div class="prob-block"><b>Решение:</b>${steps}</div>
+              <div class="prob-ans"><b>Ответ:</b> ${esc(p.answer)}</div>
+            </details>
+          </div>`;
+      }).join("");
+      return `<div class="gh-sec"><div class="gh-sec-h">${esc(set.title)}</div><div class="prob-sub">${esc(set.sub || "")}</div>${probs}</div>`;
+    }).join("");
+    return `
+      ${fxDots(12)}
+      <div class="mq-mission-top"><button class="btn btn-ghost" data-act="open-grade" data-grade="${ui.gradeSel}">← Меню</button><span class="mq-badge">🧩 Задачи</span></div>
+      <h2 class="mq-h">Комплексные задачи</h2>
+      <div class="gh-sub">Задачи посложнее — на несколько тем сразу. Сначала попробуй сам, потом открой решение.</div>
+      ${blocks}`;
+  }
+
+  // ====== Экзамен: случайные задачи из тем, очки и время ======
+  let examTimer = null;
+  const EXAM_PTS = { 1: 1, 2: 2, 3: 3 };
+  const SEC_TITLE = { all: "Все темы", intro: "Введение", matter: "Вещество", mechanics: "Механика", pressure: "Давление и жидкости", work: "Работа и энергия", thermal: "Тепловые явления", dynamics: "Динамика", electricity: "Электричество", optics: "Оптика" };
+  function examGenKeys(scope) {
+    if (ui.gradeSel !== 7) return []; // тренажёры пока только у 7 класса
+    const all = Object.keys((typeof window !== "undefined" && window.TRAINER_MAP) || {});
+    return scope === "all" ? all : all.filter((k) => k.split(":")[0] === scope);
+  }
+  function examTheoryQs(scope) {
+    const qs = (GAME.examTheory && GAME.examTheory["grade" + ui.gradeSel]) || [];
+    return scope === "all" ? qs : qs.filter((q) => q.sec === scope);
+  }
+  function examPickItem(scope) {
+    const gk = examGenKeys(scope), tq = examTheoryQs(scope);
+    const useTheory = tq.length && (!gk.length || Math.random() < 0.4);
+    if (useTheory || !gk.length) { const q = tq[Math.floor(Math.random() * tq.length)]; return { kind: "mc", q: q, topic: SEC_TITLE[q.sec] || "Теория", level: 1 }; }
+    const key = gk[Math.floor(Math.random() * gk.length)]; const lv = [1, 2, 2, 3, 3][Math.floor(Math.random() * 5)];
+    const flat = courseFlat(); const m = flat.find((x) => x.key === key);
+    return { kind: "num", task: trGen(key)(lv), level: lv, topic: m ? m.tp.t : "" };
+  }
+  function fmtTime(ms) {
+    const s = Math.floor(ms / 1000), mm = Math.floor(s / 60), ss = s % 60;
+    return mm + ":" + (ss < 10 ? "0" : "") + ss;
+  }
+  function examTick() {
+    if (ui.view !== "exam" || !ui.exam || ui.exam.phase !== "run") { if (examTimer) { clearInterval(examTimer); examTimer = null; } return; }
+    const el = document.getElementById("exam-timer"); if (el) el.textContent = fmtTime(Date.now() - ui.exam.t0);
+  }
+  function examStart(scope, n) {
+    if (examTimer) clearInterval(examTimer);
+    ui.exam = { phase: "run", scope: scope, n: n, i: 1, score: 0, points: 0, t0: Date.now(), cur: examPickItem(scope), answered: false, ok: false };
+    ui.view = "exam"; render(); window.scrollTo(0, 0);
+    examTimer = setInterval(examTick, 1000);
+  }
+  function examFinish() {
+    const e = ui.exam;
+    if (examTimer) { clearInterval(examTimer); examTimer = null; }
+    e.dt = Date.now() - e.t0;
+    e.xp = e.points * 3;
+    if (!State.data.exam) State.data.exam = { best: 0, taken: 0 };
+    State.data.exam.taken = (State.data.exam.taken || 0) + 1;
+    e.best = e.points > (State.data.exam.best || 0);
+    if (e.best) State.data.exam.best = e.points;
+    if (e.xp) State.addXP(e.xp, "exam");
+    State.save();
+    e.phase = "done";
+    render(); window.scrollTo(0, 0);
+    updateHUD();
+    if (e.score >= Math.ceil(e.n * 0.6)) confetti(44);
+  }
+  function viewExam() {
+    const e = ui.exam;
+    if (!e || e.phase === "intro") {
+      const best = (State.data.exam && State.data.exam.best) || 0;
+      const SEC_META = { intro: "🔭", matter: "🧪", mechanics: "🏃", pressure: "🌊", work: "⚙️", thermal: "🔥", dynamics: "🚀", electricity: "⚡", optics: "🔬" };
+      const theory = (GAME.examTheory && GAME.examTheory["grade" + ui.gradeSel]) || [];
+      const secs = theory.map((q) => q.sec).filter((x, i, a) => a.indexOf(x) === i);
+      const scopes = [["all", "🎲", "Все темы"]].concat(secs.map((x) => [x, SEC_META[x] || "📘", SEC_TITLE[x] || x]));
+      const cards = scopes.map((sc) => `<button class="menu-card mc-exam" data-act="exam-scope" data-scope="${sc[0]}"><span class="mc-ico">${sc[1]}</span><span class="mc-text"><span class="mc-name">${sc[2]}</span><span class="mc-desc">Теория + обычные + сложные</span></span><span class="mc-go">▶</span></button>`).join("");
+      return `
+        ${fxDots(12)}
+        <div class="mq-mission-top"><button class="btn btn-ghost" data-act="open-grade" data-grade="${ui.gradeSel}">← Меню</button><span class="mq-badge">📝 Экзамен</span></div>
+        <h2 class="mq-h">Экзамен</h2>
+        <div class="gh-sub">Выбери раздел. В каждом — теория (выбор ответа), обычные и сложные задачи.${best ? ` Рекорд: <b>${best}</b> ⭐.` : ""}</div>
+        <div class="menu-grid">${cards}</div>`;
+    }
+    if (e.phase === "len") {
+      return `
+        ${fxDots(12)}
+        <div class="mq-mission-top"><button class="btn btn-ghost" data-act="open-exam">← Разделы</button><span class="mq-badge">📝 ${esc(SEC_TITLE[e.scope] || "Экзамен")}</span></div>
+        <div class="exam-card-hero"><div class="exam-hero-ico">📝</div><div class="exam-hero-title">${esc(SEC_TITLE[e.scope] || "Экзамен")}</div><div class="exam-hero-sub">Сколько задач? Теория, обычные и сложные — вперемешку.</div></div>
+        <div class="exam-lens">
+          <button class="btn btn-primary" data-act="exam-start" data-n="5">Быстрый · 5</button>
+          <button class="btn btn-gold" data-act="exam-start" data-n="10">Экзамен · 10</button>
+          <button class="btn btn-ghost" data-act="exam-start" data-n="15">Марафон · 15</button>
+        </div>`;
+    }
+    if (e.phase === "run") {
+      const it = e.cur;
+      let body;
+      if (e.answered) {
+        if (it.kind === "mc") {
+          body = `<div class="tr-fb ${e.ok ? "ok" : "bad"}">${e.ok ? "✅ Верно! +1 очк." : `❌ Верный ответ: <b>${esc(it.q.opts[it.q.correct])}</b>`}</div>
+            <button class="btn btn-primary" data-act="exam-next">${e.i >= e.n ? "Итоги →" : "Дальше →"}</button>`;
+        } else {
+          const t = it.task;
+          body = `<div class="tr-fb ${e.ok ? "ok" : "bad"}">${e.ok ? `✅ Верно! +${it.level} очк.` : `❌ Ответ: <b>${esc(ru(String(t.a)))}${t.u ? " " + esc(t.u) : ""}</b>`}</div>
+            <div class="tr-sol"><b>Решение.</b> ${esc(ru(t.sol))}</div>
+            <button class="btn btn-primary" data-act="exam-next">${e.i >= e.n ? "Итоги →" : "Дальше →"}</button>`;
+        }
+      } else if (it.kind === "mc") {
+        body = `<div class="exam-opts">${it.q.opts.map((o, i2) => `<button class="exam-opt" data-act="exam-mc" data-idx="${i2}">${esc(o)}</button>`).join("")}</div>`;
+      } else {
+        const t = it.task;
+        body = `<div class="answer-row"><input id="inp-exam" class="num-input" type="text" inputmode="decimal" autocomplete="off" placeholder="Ответ">${t.u ? `<span class="unit">${esc(t.u)}</span>` : ""}<button class="btn btn-gold" data-act="exam-check">Ответить</button></div>`;
+      }
+      const qText = it.kind === "mc" ? it.q.q : ru(it.task.q);
+      const kindTag = it.kind === "mc" ? "теория" : (it.level >= 3 ? "сложная" : "задача");
+      return `
+        <div class="exam-top"><span>Вопрос <b>${e.i}</b> / ${e.n}</span><span>⭐ <b>${e.points}</b></span><span>⏱ <b id="exam-timer">0:00</b></span></div>
+        <div class="exam-prog"><div class="exam-prog-fill" style="width:${Math.round((e.i - 1) / e.n * 100)}%"></div></div>
+        <div class="tr-card"><div class="exam-topic">${esc(it.topic)} · ${kindTag}</div><div class="tr-q">${esc(qText)}</div>${body}</div>`;
+    }
+    const pct = Math.round(e.score / e.n * 100);
+    const mark = pct >= 85 ? "5" : pct >= 65 ? "4" : pct >= 45 ? "3" : "2";
+    return `
+      ${fxDots(14)}
+      <div class="exam-result">
+        <div class="exam-hero-ico">${pct >= 65 ? "🏆" : pct >= 45 ? "👍" : "💪"}</div>
+        <div class="exam-hero-title">Результат</div>
+        <div class="exam-sub2">${esc(SEC_TITLE[e.scope] || "Все темы")}</div>
+        <div class="exam-score">${e.score} / ${e.n} верно · ⭐ ${e.points} очков</div>
+        <div class="exam-mark">Оценка: <b>${mark}</b></div>
+        <div class="exam-meta">Время: ${fmtTime(e.dt)} · +${e.xp} XP${e.best ? " · 🏅 рекорд!" : ""}</div>
+        <div class="exam-lens">
+          <button class="btn btn-gold" data-act="open-exam">Ещё раз</button>
+          <button class="btn btn-ghost" data-act="open-grade" data-grade="${ui.gradeSel}">В меню</button>
+        </div>
+      </div>`;
+  }
+
   // Страница мира: лор + интересные факты + связанные главы и темы
   function viewRealm() {
     const r = (GAME.realms || []).find((x) => x.id === ui.realmId);
@@ -5967,7 +7417,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
     const chBtns = (r.chapters || []).map((cid) => {
       const c = chapter(cid); if (!c) return "";
       const done = State.isChapterDone(c.id);
-      const lock = (c.status !== "open") || (c.requires && !State.isChapterDone(c.requires));
+      const lock = false; // все главы открыты
       const tag = done ? "✓" : (lock ? "🔒" : "▶");
       const actAttr = lock ? `data-act="realm-locked"` : `data-act="adv-start" data-ch="${c.id}"`;
       return `<button class="prog-item ch" ${actAttr}>${c.icon || "📖"} ${esc(c.title)} <span class="prog-tag">${tag}</span></button>`;
@@ -6097,6 +7547,15 @@ if (typeof window !== "undefined") window.GAME = GAME;
         <div class="stat-grid">
           ${stats.map((s) => `<div class="stat-box"><div class="sb-num">${s.n}</div><div class="sb-lbl">${s.l}</div></div>`).join("")}
         </div>
+      </div>
+      <div class="save-card">
+        <div class="save-head">💾 Сохранение прогресса</div>
+        <div class="save-desc">Перенеси прогресс на другое устройство: выгрузи файл здесь и загрузи его там же.</div>
+        <div class="save-btns">
+          <button class="btn btn-primary" data-act="export-save">⬇️ Экспорт</button>
+          <button class="btn" data-act="import-save">⬆️ Импорт</button>
+        </div>
+        <div class="save-warn">⚠️ Импорт заменит текущий прогресс.</div>
       </div>`;
   }
 
@@ -6210,24 +7669,106 @@ if (typeof window !== "undefined") window.GAME = GAME;
   /* ============================================================
      ЭКРАН: кабинет учителя (демонстрация-задел)
      ============================================================ */
-  function viewTeacher() {
-    const demo = [
-      { name: "Алина К.", level: 4, progress: "6 / 10 тем" },
-      { name: "Максим П.", level: 7, progress: "9 / 10 тем" },
-      { name: "Дима С.", level: 2, progress: "2 / 10 тем" },
-    ];
+  // PIN-замок кабинета учителя
+  function cabTeacherLock() {
     return `
-      <div class="screen-head"><h2>👩‍🏫 Кабинет учителя</h2><div class="sub">Раздел для будущих возможностей преподавателя.</div></div>
-      <div class="demo-banner">⚙️ Это демонстрационный раздел. В будущих версиях здесь появятся реальные ученики, аккаунты и назначение заданий.</div>
-      <div class="table-card">
-        <div class="t-row head"><span>Ученик</span><span>Уровень</span><span>Прогресс</span></div>
-        ${demo.map((s) => `<div class="t-row"><span class="t-name">${esc(s.name)}</span><span>Ур. ${s.level}</span><span>${esc(s.progress)}</span></div>`).join("")}
-      </div>
-      <div class="future-list">
-        <div class="fl">➕ Добавлять учеников и формировать классы</div>
-        <div class="fl">📊 Смотреть прогресс и слабые темы каждого</div>
-        <div class="fl">🎯 Назначать темы и задания на дом</div>
-        <div class="fl">☁️ Облако и аккаунты (Firebase) — в разработке</div>
+      <div class="screen-head"><h2>👩‍🏫 Кабинет учителя</h2><div class="sub">Раздел защищён PIN-кодом.</div></div>
+      <div class="pin-card">
+        <div class="pin-ico">🔒</div>
+        <div class="pin-title">Введите PIN учителя</div>
+        <input id="teacher-pin" class="pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+        <button class="btn btn-primary" data-act="teacher-unlock">Войти</button>
+        <div class="pin-hint">Для учеников этот раздел закрыт.</div>
+      </div>`;
+  }
+
+  // Онбординг для новичков (показывается один раз)
+  const ONB = [
+    { ico: "🚀", title: "Добро пожаловать в ФизМат RPG!", text: "Ты — герой, восстанавливающий Источник Знаний по физике. Проходи главы, решай задачи и прокачивай героя." },
+    { ico: "🎬", title: "Главный экран класса", text: "Здесь карточки: Сюжет (главы с боссами), Тренажёр, Комплексные задачи и Экзамен. Выбирай и проходи." },
+    { ico: "🗓️", title: "Ежедневные квесты", text: "Каждый день вверху появляются квесты с наградой. Решай задачи и побеждай боссов — получай опыт и монеты." },
+    { ico: "🔬", title: "Лаборатория", text: "Твой герой, шпаргалка с формулами, открытия и достижения — всё там. А ещё прогресс можно выгрузить и перенести." },
+    { ico: "🏆", title: "Вперёд за знаниями!", text: "Удачи, герой! Нажми «Начать»." },
+  ];
+  function showOnboarding(step) {
+    step = step || 0;
+    let el = document.getElementById("onboarding");
+    if (!el) {
+      el = document.createElement("div"); el.id = "onboarding"; el.className = "onb-overlay";
+      document.body.appendChild(el);
+      el.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-onb]"); if (!b) return;
+        const a = b.getAttribute("data-onb");
+        if (a === "next") showOnboarding((ui.onbStep || 0) + 1);
+        else if (a === "skip") closeOnboarding();
+        else if (a === "done") { closeOnboarding(); confetti(40); }
+      });
+    }
+    const s = ONB[step], last = step === ONB.length - 1;
+    el.innerHTML = `
+      <div class="onb-card">
+        <div class="onb-ico">${s.ico}</div>
+        <div class="onb-title">${esc(s.title)}</div>
+        <div class="onb-text">${esc(s.text)}</div>
+        <div class="onb-dots">${ONB.map((_, i) => `<span class="onb-dot ${i === step ? "on" : ""}"></span>`).join("")}</div>
+        <div class="onb-btns">
+          ${last ? "" : `<button class="btn btn-ghost" data-onb="skip">Пропустить</button>`}
+          <button class="btn btn-primary" data-onb="${last ? "done" : "next"}">${last ? "Начать" : "Далее ▶"}</button>
+        </div>
+      </div>`;
+    ui.onbStep = step;
+  }
+  function closeOnboarding() { const el = document.getElementById("onboarding"); if (el) el.remove(); State.data.settings.onboarded = true; State.save(); }
+
+  function viewTeacher() {
+    const students = (typeof window !== "undefined" && window.TEACHER_DEMO) || [];
+    const avg = (t) => Math.round(t.reduce((a, x) => a + x.p, 0) / Math.max(1, t.length));
+
+    if (ui.teacherSel) {
+      const st = students.find((s) => s.id === ui.teacherSel);
+      if (st) {
+        const bars = st.topics.map((t) =>
+          `<div class="ts-topic"><span class="ts-topic-n">${esc(t.n)}</span><div class="ts-bar"><div class="ts-bar-fill" style="width:${t.p}%"></div></div><span class="ts-topic-p">${t.p}%</span></div>`).join("");
+        const modal = ui.assignFor === st.id ? assignModal(st) : "";
+        return `
+          <div class="mq-mission-top"><button class="btn btn-ghost" data-act="teacher-back">← К классу</button><span class="mq-badge">👤 Ученик</span></div>
+          <div class="ts-head"><div class="ts-ava">${st.emoji}</div><div><div class="ts-name">${esc(st.name)}</div><div class="ts-meta">Уровень ${st.level} · ${st.xp} XP · был(а): ${esc(st.last)}</div></div></div>
+          <div class="ts-stats">
+            <div class="ts-stat"><div class="ts-stat-v">${avg(st.topics)}%</div><div class="ts-stat-l">курс пройден</div></div>
+            <div class="ts-stat"><div class="ts-stat-v">${st.errors}</div><div class="ts-stat-l">ошибок</div></div>
+            <div class="ts-stat"><div class="ts-stat-v">${st.time}<span class="ts-stat-u"> мин</span></div><div class="ts-stat-l">в игре</div></div>
+          </div>
+          <div class="ts-sec-h">Прогресс по темам</div>
+          ${bars}
+          <button class="btn btn-gold ts-assign" data-act="teacher-assign" data-id="${st.id}">🎯 Назначить задание</button>
+          ${modal}`;
+      }
+    }
+
+    const rows = students.map((s) => {
+      const p = avg(s.topics);
+      return `<button class="ts-card" data-act="teacher-open" data-id="${s.id}">
+          <span class="ts-card-ava">${s.emoji}</span>
+          <span class="ts-card-main"><span class="ts-card-name">${esc(s.name)}</span><span class="ts-card-sub">Уровень ${s.level} · ${p}% курса</span><span class="ts-card-bar"><span class="ts-card-bar-fill" style="width:${p}%"></span></span></span>
+          <span class="ts-card-go">▶</span>
+        </button>`;
+    }).join("");
+    return `
+      <div class="screen-head"><h2>👩‍🏫 Кабинет учителя</h2><div class="sub">Демо для школ: класс из ${students.length} учеников. <button class="btn btn-sm" data-act="teacher-lock">🔒 Заблокировать</button></div></div>
+      <div class="demo-banner">⚙️ Демо на локальных данных. Тапни ученика — увидишь прогресс, ошибки и время; можно «назначить задание».</div>
+      <div class="ts-list">${rows}</div>`;
+  }
+
+  function assignModal(st) {
+    const topics = ["Движение", "Плотность", "Силы", "Давление", "Архимед", "Работа и энергия", "Сила трения"];
+    const btns = topics.map((t) => `<button class="ts-topic-btn" data-act="teacher-assign-pick" data-id="${st.id}" data-topic="${esc(t)}">${esc(t)}</button>`).join("");
+    return `<div class="ts-modal" data-act="teacher-assign-close">
+        <div class="ts-modal-panel" data-act="noop">
+          <div class="ts-modal-h">🎯 Назначить задание</div>
+          <div class="ts-modal-sub">Ученику: <b>${esc(st.name)}</b>. Выбери тему:</div>
+          <div class="ts-modal-topics">${btns}</div>
+          <button class="btn btn-ghost ts-modal-cancel" data-act="teacher-assign-close">Отмена</button>
+        </div>
       </div>`;
   }
 
@@ -6479,8 +8020,9 @@ if (typeof window !== "undefined") window.GAME = GAME;
       ? `<div class="vn-feedback bad"><span class="vn-mini-name">${esc(GAME.mentor.name)}:</span> ${esc(sc.hint || "Пересчитай внимательно.")}</div>`
       : "";
     // Концептуальный босс (выбор) — для тем без числового ответа
-    if (sc.options) {
-      const opts = sc.options.map((o, i) => {
+    const mcOpts = sc.options || sc.choices;
+    if (mcOpts) {
+      const opts = mcOpts.map((o, i) => {
         const c = (fb.wrong === i) ? "wrong" : "";
         return `<button class="option ${c}" data-act="scene-boss-mc" data-idx="${i}">${esc(o)}</button>`;
       }).join("");
@@ -6518,6 +8060,8 @@ if (typeof window !== "undefined") window.GAME = GAME;
     else if (ui.view === "worlds") screen = viewWorlds();
     else if (ui.view === "chapters") screen = viewChapters();
     else if (ui.view === "practice") screen = viewPractice();
+    else if (ui.view === "problems") screen = viewProblems();
+    else if (ui.view === "exam") screen = viewExam();
     else if (ui.view === "realm") screen = viewRealm();
     else if (ui.view === "course") screen = viewCourse();
     else if (ui.view === "course-mission") screen = viewCourseMission();
@@ -6535,6 +8079,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
   }
 
   function go(view, opts) {
+    tone("nav");
     ui.view = view;
     if (opts && opts.worldId) ui.worldId = opts.worldId;
     if (opts && opts.topicId) ui.topicId = opts.topicId;
@@ -6578,7 +8123,8 @@ if (typeof window !== "undefined") window.GAME = GAME;
       State.createHero(name, selectedClass);
       setAccent();
       ui.gradeSel = 7; go("grade");
-      setTimeout(() => { mentorSay(pick(GAME.mentor.lines.greet)); greeted = true; }, 500);
+      if (!State.data.settings.onboarded) setTimeout(() => showOnboarding(0), 500);
+      else setTimeout(() => { mentorSay(pick(GAME.mentor.lines.greet)); greeted = true; }, 500);
       return;
     }
 
@@ -6593,7 +8139,10 @@ if (typeof window !== "undefined") window.GAME = GAME;
 
     /* --- навигация --- */
     if (act === "go") { go(node.getAttribute("data-view"), { worldId: node.getAttribute("data-id"), topicId: node.getAttribute("data-id") }); return; }
+    if (act === "export-save") { doExport(); return; }
+    if (act === "import-save") { doImport(); return; }
     if (act === "toggle-sound") { State.toggleSound(); if (State.data.settings.sound) tone("correct"); updateHUD(); return; }
+    if (act === "toggle-music") { const on = State.toggleMusic(); if (on) Music.start(); else Music.stop(); updateHUD(); return; }
 
     if (act === "open-world") { go("world", { worldId: node.getAttribute("data-id") }); return; }
     if (act === "locked-world") { toast({ ico: "🔒", strong: "Мир скоро откроется", sub: "Следи за обновлениями!", ttl: 2600 }); return; }
@@ -6602,7 +8151,36 @@ if (typeof window !== "undefined") window.GAME = GAME;
     if (act === "locked-topic") { toast({ ico: "🔒", strong: "Тема закрыта", sub: "Сначала пройди предыдущую тему", ttl: 2600 }); return; }
 
     if (act === "stage") { ui.stage = node.getAttribute("data-stage"); ui.fb = {}; render(); window.scrollTo(0, 0); return; }
+    if (act === "teacher-unlock") {
+      const inp = document.getElementById("teacher-pin");
+      const pin = inp ? (inp.value || "").trim() : "";
+      const correct = String((window.FIZMAT_CONFIG && window.FIZMAT_CONFIG.teacherPin) || "2468");
+      if (pin === correct) { State.data.settings.teacherUnlocked = true; State.save(); toast({ ico: "🔓", strong: "Доступ открыт", cls: "green", ttl: 1600 }); render(); }
+      else { toast({ ico: "⚠️", strong: "Неверный PIN", ttl: 2200 }); if (inp) { inp.value = ""; inp.focus(); } }
+      return;
+    }
+    if (act === "teacher-lock") { State.data.settings.teacherUnlocked = false; State.save(); ui.teacherSel = null; ui.assignFor = null; toast({ ico: "🔒", strong: "Кабинет заблокирован", ttl: 1600 }); render(); return; }
+    if (act === "teacher-open") { ui.teacherSel = node.getAttribute("data-id"); ui.assignFor = null; render(); window.scrollTo(0, 0); return; }
+    if (act === "teacher-back") { ui.teacherSel = null; ui.assignFor = null; render(); window.scrollTo(0, 0); return; }
+    if (act === "teacher-assign") { ui.assignFor = node.getAttribute("data-id"); render(); return; }
+    if (act === "teacher-assign-close") { ui.assignFor = null; render(); return; }
+    if (act === "teacher-assign-pick") {
+      const st = ((typeof window !== "undefined" && window.TEACHER_DEMO) || []).find((x) => x.id === node.getAttribute("data-id"));
+      const topic = node.getAttribute("data-topic");
+      toast({ ico: "✅", strong: "Задание назначено", sub: (st ? st.name : "Ученику") + " · тема «" + topic + "»", ttl: 2800 });
+      ui.assignFor = null; render(); return;
+    }
+    if (act === "noop") { return; }
     if (act === "cab") { ui.cab = node.getAttribute("data-tab"); ui.view = "cabinet"; render(); window.scrollTo(0, 0); return; }
+    if (act === "formula-copy") {
+      const f = node.getAttribute("data-f") || "";
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(f); }
+        else { const ta = document.createElement("textarea"); ta.value = f; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }
+        toast({ ico: "📋", strong: "Формула скопирована", ttl: 1500 });
+      } catch (e) { toast({ ico: "📋", strong: "Скопировать не вышло", sub: "Формулу можно переписать вручную", ttl: 2200 }); }
+      return;
+    }
 
     /* --- курс-кампания (теория-RPG) --- */
     if (act === "open-grade") {
@@ -6616,6 +8194,35 @@ if (typeof window !== "undefined") window.GAME = GAME;
     if (act === "open-worlds") { ui.view = "worlds"; render(); window.scrollTo(0, 0); return; }
     if (act === "open-chapters") { ui.view = "chapters"; render(); window.scrollTo(0, 0); return; }
     if (act === "open-practice") { ui.view = "practice"; render(); window.scrollTo(0, 0); return; }
+    if (act === "open-problems") { ui.view = "problems"; render(); window.scrollTo(0, 0); return; }
+    if (act === "open-exam") { if (examTimer) { clearInterval(examTimer); examTimer = null; } ui.exam = { phase: "intro" }; ui.view = "exam"; render(); window.scrollTo(0, 0); return; }
+    if (act === "exam-scope") { if (!ui.exam) ui.exam = {}; ui.exam.scope = node.getAttribute("data-scope"); ui.exam.phase = "len"; render(); window.scrollTo(0, 0); return; }
+    if (act === "exam-start") { examStart((ui.exam && ui.exam.scope) || "all", +node.getAttribute("data-n")); return; }
+    if (act === "exam-check") {
+      const e = ui.exam; if (!e || e.answered || e.cur.kind !== "num") return;
+      const t = e.cur.task; const inp = document.getElementById("inp-exam");
+      const ok = checkNum(parseNum(inp ? inp.value : ""), t.a, t.tol || 0.01);
+      e.answered = true; e.ok = ok;
+      if (ok) { e.score++; e.points += (EXAM_PTS[e.cur.level] || 1); tone("correct"); bumpQuest("exam", 1); } else { tone("wrong"); }
+      render();
+      return;
+    }
+    if (act === "exam-mc") {
+      const e = ui.exam; if (!e || e.answered || e.cur.kind !== "mc") return;
+      const ok = (+node.getAttribute("data-idx")) === e.cur.q.correct;
+      e.answered = true; e.ok = ok;
+      if (ok) { e.score++; e.points += 1; tone("correct"); bumpQuest("exam", 1); } else { tone("wrong"); }
+      render();
+      return;
+    }
+    if (act === "exam-next") {
+      const e = ui.exam; if (!e) return;
+      if (e.i >= e.n) { examFinish(); return; }
+      e.i++; e.cur = examPickItem(e.scope); e.answered = false; e.ok = false;
+      render(); window.scrollTo(0, 0);
+      const inp = document.getElementById("inp-exam"); if (inp) inp.focus();
+      return;
+    }
     if (act === "ch-locked") { toast({ ico: "🔒", strong: "Глава закрыта", sub: "Сначала пройди предыдущие главы", ttl: 2400 }); return; }
     if (act === "realm-locked") { toast({ ico: "🔒", strong: "Глава закрыта", sub: "Сначала пройди предыдущие главы", ttl: 2400 }); return; }
     if (act === "course-locked") { toast({ ico: "🔒", strong: "Миссия закрыта", sub: "Сначала заверши предыдущую миссию", ttl: 2600 }); return; }
@@ -6647,7 +8254,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
       const correct = checkNum(parseNum(inp ? inp.value : ""), t.a, t.tol || 0.01);
       ui.trFb = { checked: true, correct };
       let gained = 0;
-      if (correct) { ui.tr.streak++; const rr = State.trainerSolved(); gained = rr.gained || 5; tone("correct"); }
+      if (correct) { ui.tr.streak++; const rr = State.trainerSolved(); gained = rr.gained || 5; tone("correct"); bumpQuest("solve", 1); }
       else { ui.tr.streak = 0; tone("wrong"); }
       render();
       if (correct) floatXP(gained);
@@ -6682,11 +8289,6 @@ if (typeof window !== "undefined") window.GAME = GAME;
       const chId = node.getAttribute("data-ch");
       const ch = chapter(chId);
       if (!ch || ch.status !== "open") { toast({ ico: "🔒", strong: "Глава скоро откроется", ttl: 2400 }); return; }
-      if (ch.requires && !State.isChapterDone(ch.requires)) {
-        const prev = chapter(ch.requires);
-        toast({ ico: "🔒", strong: "Сначала пройди предыдущую главу", sub: prev ? prev.title : "", ttl: 2600 });
-        return;
-      }
       ui.chId = chId;
       ui.fb = {};
       State.startChapter(chId);
@@ -6730,7 +8332,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
       if (idx === sc.correct) {
         ui.fb.concept = { solved: true };
         const g = State.awardStory(20, 5, "question");
-        flushEvents(); updateHUD(); grantToast(g); tone("correct");
+        flushEvents(); updateHUD(); grantToast(g); tone("correct"); bumpQuest("solve", 1);
       } else {
         ui.fb.concept = { wrong: idx };
         tone("wrong");
@@ -6761,7 +8363,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
         ui.fb[key] = { solved: true, val: kind === "num" ? val : null };
         const r = sc.reward || { xp: 30, coins: 10 };
         const g = State.awardStory(r.xp, r.coins, "problem");
-        flushEvents(); updateHUD(); grantToast(g); tone("correct");
+        flushEvents(); updateHUD(); grantToast(g); tone("correct"); bumpQuest("solve", 1);
       } else {
         if (kind === "num") ui.fb[key] = { wrong: true };
         tone("wrong");
@@ -6778,7 +8380,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
       if (correct) {
         ui.fb.boss = { solved: true };
         State.completeChapter(ui.chId); // награда + достижение + событие chapterComplete
-        flushEvents(); updateHUD(); tone("win"); confetti(44);
+        flushEvents(); updateHUD(); tone("win"); confetti(44); bumpQuest("boss", 1);
       } else {
         ui.fb.boss = { wrong: true };
         mentorSay(sc.hint || pick(GAME.mentor.lines.wrong));
@@ -6795,7 +8397,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
       if (idx === sc.correct) {
         ui.fb.boss = { solved: true };
         State.completeChapter(ui.chId);
-        flushEvents(); updateHUD(); tone("win"); confetti(44);
+        flushEvents(); updateHUD(); tone("win"); confetti(44); bumpQuest("boss", 1);
       } else {
         ui.fb.boss = { wrong: idx };
         mentorSay(sc.hint || pick(GAME.mentor.lines.wrong));
@@ -6805,14 +8407,16 @@ if (typeof window !== "undefined") window.GAME = GAME;
       return;
     }
 
+
     /* --- теория: переворот карточки (без полной перерисовки) --- */
     if (act === "flip") {
       const card = node;
       card.classList.toggle("flipped");
+      tone("flip");
       const i = +card.getAttribute("data-card");
       if (card.classList.contains("flipped")) {
         const g = State.readTheoryCard(ui.topicId, i);
-        if (g) { card.classList.add("read"); flushEvents(); updateHUD(); grantToast(g); tone("correct"); refreshStageTabs(); }
+        if (g) { card.classList.add("read"); flushEvents(); updateHUD(); grantToast(g); tone("correct"); bumpQuest("solve", 1); refreshStageTabs(); }
       }
       return;
     }
@@ -6822,7 +8426,7 @@ if (typeof window !== "undefined") window.GAME = GAME;
       const t = topic(ui.topicId);
       const idx = +node.getAttribute("data-idx");
       const correct = idx === t.experiment.predict.correct;
-      if (correct) { delete ui.fb["predict"]; const g = State.doExperiment(t.id); flushEvents(); updateHUD(); grantToast(g); tone("correct"); }
+      if (correct) { delete ui.fb["predict"]; const g = State.doExperiment(t.id); flushEvents(); updateHUD(); grantToast(g); tone("correct"); bumpQuest("solve", 1); }
       else { ui.fb["predict"] = { choice: idx }; tone("wrong"); }
       render();
       return;
@@ -6877,6 +8481,14 @@ if (typeof window !== "undefined") window.GAME = GAME;
   });
 
   /* Enter в числовых полях = проверить */
+  // Мобильное: при фокусе на поле ввода — подвинуть его в зону видимости (клавиатура не перекрывает)
+  root.addEventListener("focusin", (e) => {
+    const el = e.target;
+    if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) {
+      setTimeout(() => { try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_) {} }, 300);
+    }
+  });
+
   root.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
     const id = e.target.id || "";
@@ -6884,8 +8496,53 @@ if (typeof window !== "undefined") window.GAME = GAME;
     else if (id.indexOf("inp-sc-") === 0) { const i = id.slice(7); const btn = root.querySelector(`[data-act="scene-practice"][data-i="${i}"][data-kind="num"]`); if (btn) btn.click(); }
     else if (id === "inp-sboss") { const btn = root.querySelector(`[data-act="scene-boss-check"]`); if (btn) btn.click(); }
     else if (id === "inp-trainer") { const btn = root.querySelector(`[data-act="trainer-check"]`); if (btn) btn.click(); }
+    else if (id === "inp-exam") { const btn = root.querySelector(`[data-act="exam-check"]`); if (btn) btn.click(); }
     else if (id === "inp-boss") { const btn = root.querySelector(`[data-act="check-boss"]`); if (btn) btn.click(); }
     else if (id === "hero-name") { const btn = root.querySelector(`[data-act="create-hero"]`); if (btn) btn.click(); }
+    else if (id === "teacher-pin") { const btn = root.querySelector(`[data-act="teacher-unlock"]`); if (btn) btn.click(); }
+  });
+
+  // Горячие клавиши для ПК (Esc / ← → / Enter / Ctrl+S)
+  root.addEventListener("keydown", (e) => {
+    const inInput = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA");
+
+    // Ctrl+S или Cmd+S — экспорт сохранения
+    if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) {
+      e.preventDefault();
+      if (typeof doExport === "function") doExport();
+      return;
+    }
+
+    // Esc — закрыть модалку → подсказку наставника → тосты → снять фокус
+    if (e.key === "Escape") {
+      if (ui.assignFor) { ui.assignFor = null; render(); return; }
+      const mp = document.getElementById("mentor-pop"); if (mp) { mp.remove(); return; }
+      const tb = document.getElementById("toasts"); if (tb && tb.firstChild) { tb.innerHTML = ""; return; }
+      if (inInput && e.target.blur) e.target.blur();
+      return;
+    }
+
+    if (inInput) return; // в полях ввода стрелки двигают курсор
+
+    // ← / → — переключение этапов темы, либо следующая сцена
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      const tabs = Array.prototype.slice.call(root.querySelectorAll(".stage-tab"));
+      if (tabs.length) {
+        let idx = tabs.findIndex((t) => t.classList.contains("active"));
+        if (idx < 0) idx = 0;
+        idx += (e.key === "ArrowRight" ? 1 : -1);
+        if (idx >= 0 && idx < tabs.length) { tabs[idx].click(); e.preventDefault(); }
+        return;
+      }
+      if (e.key === "ArrowRight") { const nx = root.querySelector('[data-act="scene-next"]'); if (nx) { nx.click(); e.preventDefault(); } }
+      return;
+    }
+
+    // Enter вне поля — продвинуть сцену
+    if (e.key === "Enter") {
+      const nx = root.querySelector('[data-act="scene-next"]'); if (nx) { nx.click(); e.preventDefault(); }
+      return;
+    }
   });
 
   /* ============================================================
@@ -6897,15 +8554,27 @@ if (typeof window !== "undefined") window.GAME = GAME;
     ui.gradeSel = 7; ui.view = "grade";
     render();
     if (!greeted) { setTimeout(() => { mentorSay(pick(GAME.mentor.lines.greet)); greeted = true; }, 600); }
+    if (!State.data.settings.onboarded) setTimeout(() => showOnboarding(0), 700);
   } else {
     render(); // экран создания
   }
 
   /* для отладки из консоли */
   window.FizMatApp = { ui, render, reset: () => { State.reset(); selectedClass = null; greeted = false; introStep = 0; creationReady = false; setAccent(); render(); } };
+  if (State.data.hero) setTimeout(function () { bumpQuest("login", 1); }, 500);
+  document.addEventListener("click", function musicUnlock() { startMusicIfEnabled(); }, { once: true });
+  // Параллакс звёзд при прокрутке (плавно, через rAF; уважает «меньше движения»)
+  (function () {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const stars = document.querySelector(".stars"); if (!stars) return;
+    let ticking = false;
+    window.addEventListener("scroll", function () {
+      if (ticking) return; ticking = true;
+      requestAnimationFrame(function () { stars.style.transform = "translateY(" + (-window.scrollY * 0.12) + "px)"; ticking = false; });
+    }, { passive: true });
+  })();
 })();
 
-  </script>
-
+</script>
 </body>
 </html>
